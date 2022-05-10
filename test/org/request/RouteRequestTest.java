@@ -2,23 +2,34 @@ package org.request;
 
 import static org.junit.Assert.*;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.junit.Test;
+import org.quasar.route.basicParametrization.TimeInterval;
 import org.quasar.route.request.RouteRequest;
-import org.quasar.route.request.TimeInterval;
 
 import com.graphhopper.util.shapes.GHPoint;
 
+/**
+ * 
+ * @author Rúben Beirão
+ * @author Fernando Brito e Abreu
+ */
 public class RouteRequestTest {
 	
 	String IMEI = "865885043764230"; // user single identification
+	
 	GHPoint origin = new GHPoint(38.714466, -9.140692); // user location or local departure for the tour
 	GHPoint destination = new GHPoint(38.710516, -9.136196); // user ending local
-	TimeInterval availableTime = new TimeInterval(14, 19); // user available time for the route (start and end time for the route)
+	
+	Timestamp startTime = Timestamp.valueOf("2020-10-03 14:00:00.0");
+	Timestamp endTime = Timestamp.valueOf("2020-10-03 19:00:00.0");
+	TimeInterval availableTime = new TimeInterval(startTime, endTime); // user available time for the route (start and end time for the route)
+	
 	int effortLevel = 1; // the maximum level of physical effort that the user is able to do
 	int budget = 100; // the budget that the user have to visit POIs
 	LinkedList<Integer> selectedPoints = new LinkedList<Integer>(); // user selected POIs to visit (the APP send just the IDs)
@@ -26,9 +37,15 @@ public class RouteRequestTest {
 	boolean checkWeather = false; // users states if they want suggestions or not
 	ArrayList<Double> usefulWeatherData; // the weather data (probability of precipitation) for the next 10 hours
 	Calendar calendar; // register the moment of the request
-	
-	RouteRequest routeRequest = new RouteRequest(IMEI, origin, destination, availableTime, effortLevel,
-			budget, selectedPoints, selectedCategories, checkWeather);
+
+//	public RouteRequest(GHPoint origin, GHPoint destination, Timestamp departureDate, int visitationTime, int effortLevel,
+//		int budget, LinkedList<Integer> selectedPoints, List<Integer> selectedCategories, boolean checkWeather) 	
+
+//	RouteRequest routeRequest = new RouteRequest(IMEI, origin, destination, availableTime, effortLevel,
+//			budget, selectedPoints, selectedCategories, checkWeather);
+
+	RouteRequest routeRequest = new RouteRequest(origin, destination, startTime, availableTime.timeDifferenceInHours(), effortLevel,
+		budget, selectedPoints, selectedCategories, checkWeather);
 
 	@Test
 	public void testGetIMEI() {
@@ -68,14 +85,14 @@ public class RouteRequestTest {
 	
 	@Test
 	public void testGetAvailableTime() {
-		TimeInterval availableTime = new TimeInterval(14, 19);
+		TimeInterval availableTime = new TimeInterval(startTime, endTime);
 		assertEquals(availableTime, routeRequest.getAvailableTime());
 	}
 
 	@Test
 	public void testSetAvailableTime() {
-		routeRequest.setAvailableTime(new TimeInterval(15, 20));
-		assertEquals(new TimeInterval(15, 20), routeRequest.getAvailableTime());
+		routeRequest.setAvailableTime(new TimeInterval(startTime, endTime));
+		assertEquals(new TimeInterval(startTime, endTime), routeRequest.getAvailableTime());
 	}
 	
 	@Test
@@ -117,7 +134,7 @@ public class RouteRequestTest {
 		LinkedList<Integer> selectedPOIs = new LinkedList<>();
 		assertEquals(0, selectedPOIs.size());
 		selectedPOIs.add(1); // Castelo S. Jorge
-		selectedPOIs.add(30); // Museu Arqueol�gico do Carmo
+		selectedPOIs.add(30); // Museu Arqueol�gico do Carmo
 		assertEquals(2, selectedPOIs.size());
 		
 		assertEquals(selectedPOIs, selectedPoints);

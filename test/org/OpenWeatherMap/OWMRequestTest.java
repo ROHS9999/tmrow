@@ -7,22 +7,27 @@ import java.util.Calendar;
 import org.junit.Test;
 import org.quasar.route.openWeatherMap.OWMRequest;
 
+/**
+ * 
+ * @author Rúben Beirão
+ * @author Fernando Brito e Abreu
+ */
 public class OWMRequestTest {
-	
-	@Test
-	public void testOWMRequest() {
-		OWMRequest owm = new OWMRequest("38.714466", "-9.140692");
-		
-	}
 
-	@Test
-	public void testGetWeatherData() {
-		fail("Not yet implemented");
-	}
+    @Test
+    public void testOWMRequest() {
+	OWMRequest owm = new OWMRequest("38.714466", "-9.140692");
 
-	@Test
-	public void testGetUsefulPrecipitation() {
-		fail("Not yet implemented");
-	}
+    }
+
+    @Test
+    public void testGetWeatherData() {
+	fail("Not yet implemented");
+    }
+
+    @Test
+    public void testGetUsefulPrecipitation() {
+	fail("Not yet implemented");
+    }
 
 }

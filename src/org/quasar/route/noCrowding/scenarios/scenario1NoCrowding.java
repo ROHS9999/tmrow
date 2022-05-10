@@ -6,7 +6,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.quasar.route.dbConnection.PointOfInterest;
+import org.quasar.route.basicParametrization.PointOfInterest;
 import org.quasar.route.graphhopper.GraphhopperNoCrowding;
 import org.quasar.route.graphhopper.GraphhopperServer;
 import org.quasar.route.request.ConvertRouteRequest;
@@ -14,9 +14,13 @@ import org.quasar.route.request.RouteRequest;
 import org.quasar.route.response.Route;
 import org.quasar.route.response.RouteResponse;
 
-import com.graphhopper.PathWrapper;
+import com.graphhopper.ResponsePath;
 import com.graphhopper.util.shapes.GHPoint;
 
+/**
+ * @author Rúben Beirão
+ * @author Fernando Brito e Abreu
+ */
 public class scenario1NoCrowding {
 
 //	@Test
@@ -32,12 +36,12 @@ public class scenario1NoCrowding {
 		LinkedList<LinkedList<PointOfInterest>> scenarios = hoper.getAllScenarios(selectedPOIs);
 		scenarios = hoper.calculateTimeBetweenPOIsInScenarios(routeRequest1.getCalendar(), scenarios);
 		LinkedList<LinkedList<GHPoint>> myGpoints = hoper.selectGHPoint(scenarios);
-		LinkedList<LinkedList<PathWrapper>> dividedRequest = hoper.dividedRequest(myGpoints);
-		List<PathWrapper> compareAlternativeRoutes = hoper.compareAlternativeRoutes(dividedRequest);
+		LinkedList<LinkedList<ResponsePath>> dividedRequest = hoper.dividedRequest(myGpoints);
+		List<ResponsePath> compareAlternativeRoutes = hoper.compareAlternativeRoutes(dividedRequest);
 		
 		System.out.println("COMPAREALTERNATIVEROUTES SIZE IS: " + compareAlternativeRoutes.size());
 		
-		List<PathWrapper> chooseBestDistance = hoper.chooseBestDistance(compareAlternativeRoutes);
+		List<ResponsePath> chooseBestDistance = hoper.chooseBestDistance(compareAlternativeRoutes);
 
 		hoper.pathInfo(chooseBestDistance);
 		

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
+import org.quasar.route.basicParametrization.TimeInterval;
 import org.quasar.route.openWeatherMap.OWMRequest;
 
 import com.graphhopper.util.shapes.GHPoint;
@@ -16,12 +17,13 @@ import com.graphhopper.util.shapes.GHPoint;
  * Represents a RouteRequest. This means a route recommendation request made by
  * an user from the app.
  * 
- * @author Rúben Beirão
- *
+ * @author RÃºben BeirÃ£o
+ * @author Fernando Brito e Abreu
  */
+
 public class RouteRequest {
 
-	// private String IMEI; // user single identification
+    	private String IMEI; // user single identification
 	private GHPoint origin; // user location or local departure for the route
 	private GHPoint destination; // user ending local
 	private TimeInterval availableTime; // user available time for the route
@@ -76,7 +78,6 @@ public class RouteRequest {
 			double userAvailableTime = userAvailableTimeInHours(departureDate, visitationTime);
 			usefulWeatherData = req.getUsefulPrecipitation(calendar, userAvailableTime);
 		}
-
 	}
 
 	public Timestamp getDepartureDate() {
@@ -141,9 +142,9 @@ public class RouteRequest {
 	 * @return A String correspondent to the IMEI of the mobile of the user who sent
 	 *         the request
 	 */
-	// public String getIMEI() {
-	// return IMEI;
-	// }
+	 public String getIMEI() {
+	 return IMEI;
+	 }
 
 	/**
 	 * Sets the IMEI present in the RouteRequest
@@ -152,9 +153,9 @@ public class RouteRequest {
 	 *            A String containing the IMEI of the mobile of the user who sent
 	 *            the request
 	 */
-	// public void setIMEI(String iMEI) {
-	// IMEI = iMEI;
-	// }
+	 public void setIMEI(String iMEI) {
+	 IMEI = iMEI;
+	 }
 
 	/**
 	 * Gets the origin local of the RouteRequest
@@ -203,9 +204,9 @@ public class RouteRequest {
 	 * 
 	 * @return A TimeInterval representing the user available time for the route
 	 */
-//	public TimeInterval getAvailableTime() {
-//		return availableTime;
-//	}
+	public TimeInterval getAvailableTime() {
+		return availableTime;
+	}
 
 	/**
 	 * Sets the time interval within which the route must occur
@@ -213,9 +214,9 @@ public class RouteRequest {
 	 * @param availableTime
 	 *            A TimeInterval containing the user available time for the route
 	 */
-//	public void setAvailableTime(TimeInterval availableTime) {
-//		this.availableTime = availableTime;
-//	}
+	public void setAvailableTime(TimeInterval availableTime) {
+		this.availableTime = availableTime;
+	}
 
 	/**
 	 * Gets the effort level of the RouteRequest

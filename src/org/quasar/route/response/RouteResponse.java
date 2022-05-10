@@ -6,8 +6,8 @@ import java.util.LinkedList;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.quasar.route.dbConnection.PointOfInterest;
-import org.quasar.route.graphhopper.TimedPointOfInterest;
+import org.quasar.route.basicParametrization.PointOfInterest;
+import org.quasar.route.basicParametrization.TimedPointOfInterest;
 
 import com.graphhopper.util.shapes.GHPoint;
 import com.graphhopper.util.shapes.GHPoint3D;
@@ -17,310 +17,305 @@ import com.mongodb.util.JSON;
  * RouteResponse is the class that creates the structure which will be the
  * answer that is sent to the mobile application
  * 
- * @author Rúben Beirão
- *
+ * @author RÃºben BeirÃ£o
+ * @author Fernando Brito e Abreu
  */
+
 public class RouteResponse {
 
 //	private String IMEI;
-	private Route route;
-	private int statusCode;
-	private String codeJustification;
+    private Route route;
+    private int statusCode;
+    private String codeJustification;
 
-	/**
-	 * Creates a Route Response with specified IMEI, route, status code and code
-	 * justification
-	 * 
-	 * @param IMEI
-	 *            The IMEI correspondent to the mobile of the user who sent the
-	 *            request
-	 * @param route
-	 *            All the information needed to present the route to the user on the
-	 *            app side
-	 * @param statusCode
-	 *            The code that identifies a successful or unsuccessful request
-	 * @param codeJustification
-	 *            The explanation of the success or failure of the route response
-	 *            status code
-	 */
-	public RouteResponse(Route route, int statusCode, String codeJustification) {
-		// this.IMEI = IMEI;
-		this.route = route;
-		this.statusCode = statusCode;
-		this.codeJustification = codeJustification;
-	}
+    /**
+     * Creates a Route Response with specified IMEI, route, status code and code
+     * justification
+     * 
+     * @param IMEI              The IMEI correspondent to the mobile of the user who
+     *                          sent the request
+     * @param route             All the information needed to present the route to
+     *                          the user on the app side
+     * @param statusCode        The code that identifies a successful or
+     *                          unsuccessful request
+     * @param codeJustification The explanation of the success or failure of the
+     *                          route response status code
+     */
+    public RouteResponse(Route route, int statusCode, String codeJustification) {
+	// this.IMEI = IMEI;
+	this.route = route;
+	this.statusCode = statusCode;
+	this.codeJustification = codeJustification;
+    }
 
-	/**
-	 * Gets the RouteResponse IMEI
-	 * 
-	 * @return A string representing the IMEI of the RouteResponse
-	 */
+    /**
+     * Gets the RouteResponse IMEI
+     * 
+     * @return A string representing the IMEI of the RouteResponse
+     */
 //	public String getIMEI() {
 //		return IMEI;
 //	}
 
-	/**
-	 * Sets the RouteResponse IMEI
-	 * 
-	 * @param iMEI
-	 *            A string containing the IMEI of the mobile of the user who sent
-	 *            the request
-	 */
+    /**
+     * Sets the RouteResponse IMEI
+     * 
+     * @param iMEI A string containing the IMEI of the mobile of the user who sent
+     *             the request
+     */
 //	public void setIMEI(String iMEI) {
 //		IMEI = iMEI;
 //	}
 
-	/**
-	 * Gets the RouteResponse status code
-	 * 
-	 * @return An int representing the status code of the RouteResponse
-	 */
-	public int getStatusCode() {
-		return statusCode;
-	}
+    /**
+     * Gets the RouteResponse status code
+     * 
+     * @return An int representing the status code of the RouteResponse
+     */
+    public int getStatusCode() {
+	return statusCode;
+    }
 
-	/**
-	 * Sets the RouteResponse status code
-	 * 
-	 * @param statusCode
-	 *            An int containing the code that identifies a successful or
-	 *            unsuccessful request
-	 */
-	public void setStatusCode(int statusCode) {
-		this.statusCode = statusCode;
-	}
+    /**
+     * Sets the RouteResponse status code
+     * 
+     * @param statusCode An int containing the code that identifies a successful or
+     *                   unsuccessful request
+     */
+    public void setStatusCode(int statusCode) {
+	this.statusCode = statusCode;
+    }
 
-	/**
-	 * Gets the RouteResponse status code justification
-	 * 
-	 * @return A string representing the status code justification of the
-	 *         RouteResponse
-	 */
-	public String getCodeJustification() {
-		return codeJustification;
-	}
+    /**
+     * Gets the RouteResponse status code justification
+     * 
+     * @return A string representing the status code justification of the
+     *         RouteResponse
+     */
+    public String getCodeJustification() {
+	return codeJustification;
+    }
 
-	/**
-	 * Sets the RouteResponse status code justification
-	 * 
-	 * @param codeJustification
-	 *            A string containing the explanation of the success or failure of
-	 *            the route response status code
-	 */
-	public void setCodeJustification(String codeJustification) {
-		this.codeJustification = codeJustification;
-	}
+    /**
+     * Sets the RouteResponse status code justification
+     * 
+     * @param codeJustification A string containing the explanation of the success
+     *                          or failure of the route response status code
+     */
+    public void setCodeJustification(String codeJustification) {
+	this.codeJustification = codeJustification;
+    }
 
-	/**
-	 * Sets the RouteResponse route representation
-	 * 
-	 * @param route
-	 *            A Route object containing all the information needed to present
-	 *            the route to the user on the app side
-	 */
-	public void setRoute(Route route) {
-		this.route = route;
-	}
+    /**
+     * Sets the RouteResponse route representation
+     * 
+     * @param route A Route object containing all the information needed to present
+     *              the route to the user on the app side
+     */
+    public void setRoute(Route route) {
+	this.route = route;
+    }
 
-	/**
-	 * Gets the RouteResponse route representation
-	 * 
-	 * @return A Route object representing the route of the RouteResponse
-	 */
-	public Route getRoute() {
-		return route;
-	}
+    /**
+     * Gets the RouteResponse route representation
+     * 
+     * @return A Route object representing the route of the RouteResponse
+     */
+    public Route getRoute() {
+	return route;
+    }
 
-	/**
-	 * Converts the specified Route Response into JSON
-	 * 
-	 * @param routeResponse
-	 *            A string which is a JSON representation of the RouteResponse
-	 *            parameter
-	 */
-	public void convertToJson(RouteResponse routeResponse) {
-		// ===================================MAIN
-		// OBJECT===================================================
-		JSONObject jsonObject = new JSONObject();
+    /**
+     * Converts the specified Route Response into JSON
+     * 
+     * @param routeResponse A string which is a JSON representation of the
+     *                      RouteResponse parameter
+     */
+    public void convertToJson(RouteResponse routeResponse) {
+	// ===================================MAIN
+	// OBJECT===================================================
+	JSONObject jsonObject = new JSONObject();
 
-		// ===================================CODE===================================================
-		jsonObject.put("code", routeResponse.getStatusCode());
+	// ===================================CODE===================================================
+	jsonObject.put("code", routeResponse.getStatusCode());
 
-		// ===================================CODE
-		// JUSTIFICATION===============================================
-		jsonObject.put("codeJustification", routeResponse.getCodeJustification());
+	// ===================================CODE
+	// JUSTIFICATION===============================================
+	jsonObject.put("codeJustification", routeResponse.getCodeJustification());
 
-		// ===================================IMEI===================================================
+	// ===================================IMEI===================================================
 //		jsonObject.put("IMEI", routeResponse.getIMEI());
 
-		if(routeResponse.getStatusCode()!=204) {
-		// ================================ROUTE
-		// OBJECT==================================================
-		JSONObject routeObject = new JSONObject();
+	if (routeResponse.getStatusCode() != 204) {
+	    // ================================ROUTE
+	    // OBJECT==================================================
+	    JSONObject routeObject = new JSONObject();
 
-		// ===================================TIMED
-		// POIS===================================================
-		JSONArray timedpois = new JSONArray();
-		
-		for (int i = 0; i < routeResponse.getRoute().getPois().size(); i++) {
-			JSONObject timeAndPoi = new JSONObject();
-			timeAndPoi.put("timestamp", routeResponse.getRoute().getPois().get(i).getVisitTimestamp().getTime());
-			
-			JSONObject timepoi = new JSONObject();
-			
-			timepoi.put("pointID", routeResponse.getRoute().getPois().get(i).getPoi().getPointID());
-			timepoi.put("name", routeResponse.getRoute().getPois().get(i).getPoi().getName());
-			
-			JSONObject coordinates = new JSONObject();
-			coordinates.put("latitude", routeResponse.getRoute().getPois().get(i).getPoi().getLatitude());
-			coordinates.put("longitude", routeResponse.getRoute().getPois().get(i).getPoi().getLongitude());
-			timepoi.put("coordinates", coordinates);
-			
-			timepoi.put("categoryID", routeResponse.getRoute().getPois().get(i).getPoi().getCategoryID());
-			timepoi.put("visitTime", routeResponse.getRoute().getPois().get(i).getPoi().getVisitTime());
-			timepoi.put("price", routeResponse.getRoute().getPois().get(i).getPoi().getPrice());
-			timepoi.put("sustainability", routeResponse.getRoute().getPois().get(i).getPoi().getSustainability());
-			timepoi.put("openHour", routeResponse.getRoute().getPois().get(i).getPoi().getOpenHour());
-			timepoi.put("closeHour", routeResponse.getRoute().getPois().get(i).getPoi().getCloseHour());
-			
-			timeAndPoi.put("poi", timepoi);
+	    // ===================================TIMED
+	    // POIS===================================================
+	    JSONArray timedpois = new JSONArray();
 
-			timedpois.put(timeAndPoi);
-		}
+	    for (int i = 0; i < routeResponse.getRoute().getPois().size(); i++) {
+		JSONObject timeAndPoi = new JSONObject();
+		timeAndPoi.put("timestamp", routeResponse.getRoute().getPois().get(i).getVisitTimestamp().getTime());
 
-		routeObject.put("pois", timedpois);
+		JSONObject timepoi = new JSONObject();
 
-		// ===================================LINE===================================================
-		JSONArray line = new JSONArray();
+		timepoi.put("pointID", routeResponse.getRoute().getPois().get(i).getPoi().getPointID());
+		timepoi.put("name", routeResponse.getRoute().getPois().get(i).getPoi().getName());
 
-		for (int i = 0; i < routeResponse.getRoute().getLine().size(); i++) {
-			JSONObject coordinate = new JSONObject();
-			coordinate.put("latitude", routeResponse.getRoute().getLine().get(i).getLat());
-			coordinate.put("longitude", routeResponse.getRoute().getLine().get(i).getLon());
-			//coordinate.put("elevation", routeResponse.getRoute().getLine().get(i).getEle());
-			line.put(coordinate);
-		}
+		JSONObject coordinates = new JSONObject();
+		coordinates.put("latitude", routeResponse.getRoute().getPois().get(i).getPoi().getLatitude());
+		coordinates.put("longitude", routeResponse.getRoute().getPois().get(i).getPoi().getLongitude());
+		timepoi.put("coordinates", coordinates);
 
-		System.out.println(line.toString());
-		routeObject.put("line", line);
+		timepoi.put("categoryID", routeResponse.getRoute().getPois().get(i).getPoi().getCategoryID());
+		timepoi.put("visitTime", routeResponse.getRoute().getPois().get(i).getPoi().getVisitTime());
+		timepoi.put("price", routeResponse.getRoute().getPois().get(i).getPoi().getPrice());
+		timepoi.put("sustainability", routeResponse.getRoute().getPois().get(i).getPoi().getSustainability());
+		timepoi.put("openHour", routeResponse.getRoute().getPois().get(i).getPoi().getOpenHour());
+		timepoi.put("closeHour", routeResponse.getRoute().getPois().get(i).getPoi().getCloseHour());
 
-		// ===================================TIME===================================================
-		int time = route.getTime();
-		routeObject.put("durationTime", time);
+		timeAndPoi.put("poi", timepoi);
 
-		// ===================================DISTANCE===================================================
-		double distance = route.getDistance();
-		routeObject.put("distance", distance);
+		timedpois.put(timeAndPoi);
+	    }
 
-		// ===================================SUSTAINABILITY===================================================
-		int sustainability = route.getSustainability();
-		routeObject.put("sustainability", sustainability);
+	    routeObject.put("pois", timedpois);
 
-		// ===================================PRICE===================================================
-		int price = route.getPrice();
-		routeObject.put("price", price);
+	    // ===================================LINE===================================================
+	    JSONArray line = new JSONArray();
 
-		// ===================================ORIGIN===================================================
-		JSONObject origin = new JSONObject();
-		double originLatitude = route.getOrigin().getLat();
-		double originLongitude = route.getOrigin().getLon();
-		origin.put("latitude", originLatitude);
-		origin.put("longitude", originLongitude);
-		routeObject.put("origin", origin);
+	    for (int i = 0; i < routeResponse.getRoute().getLine().size(); i++) {
+		JSONObject coordinate = new JSONObject();
+		coordinate.put("latitude", routeResponse.getRoute().getLine().get(i).getLat());
+		coordinate.put("longitude", routeResponse.getRoute().getLine().get(i).getLon());
+		// coordinate.put("elevation",
+		// routeResponse.getRoute().getLine().get(i).getEle());
+		line.put(coordinate);
+	    }
 
-		// ===================================DESTINATION===================================================
-		JSONObject destination = new JSONObject();
-		double destinationLatitude = route.getDestination().getLat();
-		double destinationLongitude = route.getDestination().getLon();
-		destination.put("latitude", destinationLatitude);
-		destination.put("longitude", destinationLongitude);
-		routeObject.put("destination", destination);
+	    System.out.println(line.toString());
+	    routeObject.put("line", line);
 
-		// ===================================START TIME && END TIME ===================================================
-		JSONObject startEndTime = new JSONObject();
-		startEndTime.put("startTime", route.getStartTime().getTime());
-		startEndTime.put("endTime", route.getEndTime().getTime());
-		routeObject.put("time", startEndTime);
-		
-		// ===================================CALORIES===================================================
-		routeObject.put("calories", route.getCalories());
+	    // ===================================TIME===================================================
+	    int time = route.getTime();
+	    routeObject.put("durationTime", time);
 
-		// =================================ADD ROUTE OBJECT TO MAIN
-		// OBJECT=====================================
-		jsonObject.put("route", routeObject);
-		}
+	    // ===================================DISTANCE===================================================
+	    double distance = route.getDistance();
+	    routeObject.put("distance", distance);
 
-		String jsonObjectString = jsonObject.toString();
+	    // ===================================SUSTAINABILITY===================================================
+	    int sustainability = route.getSustainability();
+	    routeObject.put("sustainability", sustainability);
 
-		System.out.println(jsonObjectString);
-		// String myJson = jsonObject.toString();
-		// System.out.println(myJson);
+	    // ===================================PRICE===================================================
+	    int price = route.getPrice();
+	    routeObject.put("price", price);
+
+	    // ===================================ORIGIN===================================================
+	    JSONObject origin = new JSONObject();
+	    double originLatitude = route.getOrigin().getLat();
+	    double originLongitude = route.getOrigin().getLon();
+	    origin.put("latitude", originLatitude);
+	    origin.put("longitude", originLongitude);
+	    routeObject.put("origin", origin);
+
+	    // ===================================DESTINATION===================================================
+	    JSONObject destination = new JSONObject();
+	    double destinationLatitude = route.getDestination().getLat();
+	    double destinationLongitude = route.getDestination().getLon();
+	    destination.put("latitude", destinationLatitude);
+	    destination.put("longitude", destinationLongitude);
+	    routeObject.put("destination", destination);
+
+	    // ===================================START TIME && END TIME
+	    // ===================================================
+	    JSONObject startEndTime = new JSONObject();
+	    startEndTime.put("startTime", route.getStartTime().getTime());
+	    startEndTime.put("endTime", route.getEndTime().getTime());
+	    routeObject.put("time", startEndTime);
+
+	    // ===================================CALORIES===================================================
+	    routeObject.put("calories", route.getCalories());
+
+	    // =================================ADD ROUTE OBJECT TO MAIN
+	    // OBJECT=====================================
+	    jsonObject.put("route", routeObject);
 	}
 
-	@Override
-	public String toString() {
-		return "RouteResponse [route=" + route + ", statusCode=" + statusCode
-				+ ", codeJustification=" + codeJustification + "]";
-	}
+	String jsonObjectString = jsonObject.toString();
 
-	public static void main(String[] args) {
-		PointOfInterest poi = new PointOfInterest(1, "Castelo", 38.8736, -9.3463653, 50, 9, 18, 3, 5, 7, 70);
-		PointOfInterest poi2 = new PointOfInterest(1, "Praça", 38.3567, -9.456799, 80, 9, 18, 3, 5, 7, 70);
+	System.out.println(jsonObjectString);
+	// String myJson = jsonObject.toString();
+	// System.out.println(myJson);
+    }
 
-		LinkedList<TimedPointOfInterest> timedPOIs = new LinkedList<>();
-		TimedPointOfInterest timedpoi1 = new TimedPointOfInterest(poi, Timestamp.valueOf("2020-10-03 14:50:10.0"));
-		TimedPointOfInterest timedpoi2 = new TimedPointOfInterest(poi2, Timestamp.valueOf("2020-10-03 17:08:10.0"));
-		timedPOIs.add(timedpoi1);
-		timedPOIs.add(timedpoi2);
+    @Override
+    public String toString() {
+	return "RouteResponse [route=" + route + ", statusCode=" + statusCode + ", codeJustification="
+		+ codeJustification + "]";
+    }
 
-		System.out.println("O tamanho de timedPOIs é: " + timedPOIs.size());
+    public static void main(String[] args) {
+	PointOfInterest poi = new PointOfInterest(1, "Castelo", 38.8736, -9.3463653, 50, 9, 18, 3, 5, 7, 70);
+	PointOfInterest poi2 = new PointOfInterest(1, "Praï¿½a", 38.3567, -9.456799, 80, 9, 18, 3, 5, 7, 70);
 
-		ArrayList<GHPoint3D> line = new ArrayList<>();
-		GHPoint3D point1 = new GHPoint3D(38.9887765, -9.23434546, 31.0);
-		GHPoint3D point2 = new GHPoint3D(38.3455475, -9.87676599, 31.0);
-		GHPoint3D point3 = new GHPoint3D(38.8756757, -9.45678900, 31.0);
-		line.add(point1);
-		line.add(point2);
-		line.add(point3);
+	LinkedList<TimedPointOfInterest> timedPOIs = new LinkedList<>();
+	TimedPointOfInterest timedpoi1 = new TimedPointOfInterest(poi, Timestamp.valueOf("2020-10-03 14:50:10.0"));
+	TimedPointOfInterest timedpoi2 = new TimedPointOfInterest(poi2, Timestamp.valueOf("2020-10-03 17:08:10.0"));
+	timedPOIs.add(timedpoi1);
+	timedPOIs.add(timedpoi2);
 
-		int time = 8000;
-		System.out.println("Time is + " + time);
+	System.out.println("O tamanho de timedPOIs ï¿½: " + timedPOIs.size());
 
-		double distance = 3000; // distance in meters
-		System.out.println("Distance is + " + distance);
+	ArrayList<GHPoint3D> line = new ArrayList<>();
+	GHPoint3D point1 = new GHPoint3D(38.9887765, -9.23434546, 31.0);
+	GHPoint3D point2 = new GHPoint3D(38.3455475, -9.87676599, 31.0);
+	GHPoint3D point3 = new GHPoint3D(38.8756757, -9.45678900, 31.0);
+	line.add(point1);
+	line.add(point2);
+	line.add(point3);
 
-		double sustainability = 55.5;
-		System.out.println("Average sustainability is + " + sustainability);
+	int time = 8000;
+	System.out.println("Time is + " + time);
 
-		int price = 30;
-		System.out.println("Price is + " + price);
+	double distance = 3000; // distance in meters
+	System.out.println("Distance is + " + distance);
 
-		GHPoint origin = new GHPoint(38.714466, -9.140692);
-		System.out.println("Origin is + " + origin);
+	double sustainability = 55.5;
+	System.out.println("Average sustainability is + " + sustainability);
 
-		GHPoint destination = new GHPoint(38.714466, -9.140692);
-		System.out.println("Destination is + " + destination);
+	int price = 30;
+	System.out.println("Price is + " + price);
 
-		Timestamp startTime = Timestamp.valueOf("2020-10-03 14:30:10.0");
-		System.out.println("Start time is + " + startTime);
+	GHPoint origin = new GHPoint(38.714466, -9.140692);
+	System.out.println("Origin is + " + origin);
 
-		int calories = 989;
-		System.out.println("Calories is + " + calories);
+	GHPoint destination = new GHPoint(38.714466, -9.140692);
+	System.out.println("Destination is + " + destination);
 
-		Timestamp endTime = Timestamp.valueOf("2020-10-03 19:10:10.0");
-		System.out.println("End time is + " + endTime);
+	Timestamp startTime = Timestamp.valueOf("2020-10-03 14:30:10.0");
+	System.out.println("Start time is + " + startTime);
+
+	int calories = 989;
+	System.out.println("Calories is + " + calories);
+
+	Timestamp endTime = Timestamp.valueOf("2020-10-03 19:10:10.0");
+	System.out.println("End time is + " + endTime);
 
 //		String IMEI = "865885043764230";
 
-		Route route = new Route(timedPOIs, line, time, distance, (int) sustainability, price, origin, destination,
-				startTime, endTime, calories);
+	Route route = new Route(timedPOIs, line, time, distance, (int) sustainability, price, origin, destination,
+		startTime, endTime, calories);
 
-		int statusCode = 200;
+	int statusCode = 200;
 
-		String codeJustification = "Success";
+	String codeJustification = "Success";
 
-		RouteResponse routeResponse = new RouteResponse(route, statusCode, codeJustification);
+	RouteResponse routeResponse = new RouteResponse(route, statusCode, codeJustification);
 
-		routeResponse.convertToJson(routeResponse);
-	}
+	routeResponse.convertToJson(routeResponse);
+    }
 }

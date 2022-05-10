@@ -1,4 +1,4 @@
-package org.quasar.route.dbConnection;
+package org.quasar.route.graphhopper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,8 +7,9 @@ import java.util.logging.Logger;
 
 import org.bson.Document;
 
-import com.graphhopper.PathWrapper;
+import com.graphhopper.ResponsePath;
 import com.graphhopper.util.shapes.GHPoint3D;
+
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -20,7 +21,8 @@ import com.mongodb.client.model.geojson.Position;
  * MongoConnection is a class that allows to connect to MongoDB database and
  * extract the data provided about the crowding levels
  * 
- * @author Rúben Beirão
+ * @author RÃºben BeirÃ£o
+ * @author Fernando Brito e Abreu
  *
  */
 
@@ -48,10 +50,10 @@ public class MongoConnection {
 	 * crowding of those coordinates. Then returns the maximum value of crowding
 	 * found.
 	 * 
-	 * @param path Represents a PathWrapper which holds the data of a Path
+	 * @param path Represents a ResponsePath which holds the data of a Path
 	 * @return An int representing the maximum value of crowding in a path
 	 */
-	public int getMaxCrowdingPath(PathWrapper path) {
+	public int getMaxCrowdingPath(ResponsePath path) {
 		int maxCrowding = 0;
 
 		int pathSize = path.getPoints().size();

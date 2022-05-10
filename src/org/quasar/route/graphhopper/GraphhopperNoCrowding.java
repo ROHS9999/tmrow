@@ -10,18 +10,22 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-import org.quasar.route.dbConnection.DBConnection;
-import org.quasar.route.dbConnection.MongoConnection;
-import org.quasar.route.dbConnection.PointOfInterest;
+import org.quasar.route.basicParametrization.DBConnection;
+import org.quasar.route.basicParametrization.Effort;
+import org.quasar.route.basicParametrization.PoiPermutations;
+import org.quasar.route.basicParametrization.PointOfInterest;
+import org.quasar.route.basicParametrization.TimeInterval;
+import org.quasar.route.basicParametrization.TimedPointOfInterest;
 import org.quasar.route.request.RouteRequest;
-import org.quasar.route.request.TimeInterval;
 import org.quasar.route.response.Route;
 import org.quasar.route.response.RouteResponse;
 
 import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
 import com.graphhopper.GraphHopper;
-import com.graphhopper.PathWrapper;
+import com.graphhopper.ResponsePath;
+import com.graphhopper.config.CHProfile;
+import com.graphhopper.config.Profile;
 import com.graphhopper.reader.dem.CGIARProvider;
 import com.graphhopper.reader.osm.GraphHopperOSM;
 import com.graphhopper.routing.util.AllEdgesIterator;
@@ -32,7 +36,7 @@ import com.graphhopper.routing.weighting.Weighting;
 import com.graphhopper.storage.Graph;
 import com.graphhopper.storage.GraphHopperStorage;
 import com.graphhopper.storage.index.LocationIndex;
-import com.graphhopper.storage.index.QueryResult;
+import com.graphhopper.storage.index.Snap;
 import com.graphhopper.util.EdgeIterator.Edge;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.Instruction;
@@ -44,29 +48,32 @@ import com.graphhopper.util.shapes.GHPoint;
 import com.graphhopper.util.shapes.GHPoint3D;
 
 /**
- * 
  * @author Rita Peixoto
- * @author Rúben Beirão
- *
+ * @author RÃºben BeirÃ£o
+ * @author Fernando Brito e Abreu
  */
 public class GraphhopperNoCrowding {
+    
+    private static final String ALGORITHM = "alternative_route";
+    private static final String VEHICLE = "foot";
+    private static final String WEIGHTING = "short_fastest";
 
+	private static final String OSM_FILE = "../resources/CentralLisbon.osm.pbf";
+	private static final String GRAPHHOPPER_DIR = "../resources/graphhopperv2";
+	private static final String ELEVATION_PROVIDER = "C:/Users/RÃºben BeirÃ£o/Desktop/RoutingTest/geo-graphs/target/classes";
+	
 	private RouteRequest request;
 	private GraphHopper hopper;
-	private static final String OSM_FILE = "C:/Users/Rúben Beirão/Desktop/RoutingTest/ROUTE/resources/CentralLisbon.osm.pbf";
-	private static final String GRAPHHOPPER_DIR = "src/main/resources/graphhopperv2";
-	private static final String VEHICLE = "foot";
-	private static final String ELEVATION_PROVIDER = "C:/Users/Rúben Beirão/Desktop/RoutingTest/geo-graphs/target/classes";
 
 	private LinkedList<PointOfInterest> databasePOIs = new LinkedList<PointOfInterest>();
-
 	private LinkedList<PointOfInterest> routePOIs = new LinkedList<PointOfInterest>();
 	private ArrayList<GHPoint3D> routeLine = new ArrayList<GHPoint3D>();
+	
 	private double routeDistance = 0;
 	private int routeTime = 0;
 	private Timestamp routeStartTime = new Timestamp(0);
 	private Timestamp routeEndTime = new Timestamp(0);
-	private List<PathWrapper> bestPathwrapper = new LinkedList<>();
+	private List<ResponsePath> bestResponsePath = new LinkedList<>();
 	private double routeCalories = 0;
 	private LinkedList<PointOfInterest> routeOrderedPois = new LinkedList<>();
 	private ArrayList<Timestamp> timestampOfVisits = new ArrayList<>();
@@ -93,14 +100,17 @@ public class GraphhopperNoCrowding {
 		 * server. Result also optimized for usage in the web module i.e. try reduce
 		 * network IO.
 		 */
-		hopper = new GraphHopperOSM().forServer();
+		
+		GraphHopper hopper = new GraphHopper();
 
 		/**
 		 * This file can be any file type supported by the DataReader. E.g. for the
 		 * OSMReader it is the OSM xml (.osm), a compressed xml (.osm.zip or .osm.gz) or
 		 * a protobuf file (.pbf)
 		 */
-		hopper.setDataReaderFile(OSM_FILE);
+	  
+		hopper.setOSMFile(OSM_FILE);
+
 		/**
 		 * Sets the graphhopper folder.
 		 */
@@ -111,7 +121,13 @@ public class GraphhopperNoCrowding {
 		 * manager defines how data from every vehicle is written (and read) into edges
 		 * of the graph.
 		 */
-		hopper.setEncodingManager(EncodingManager.create(VEHICLE));
+//		hopper.setEncodingManager(EncodingManager.create(VEHICLE));
+		
+	        // see docs/core/profiles.md to learn more about profiles
+	        hopper.setProfiles(new Profile(VEHICLE).setVehicle(VEHICLE).setWeighting(WEIGHTING).setTurnCosts(false));
+
+	        // this enables speed mode for the profile we called car
+	        hopper.getCHPreparationHandler().setCHProfiles(new CHProfile(VEHICLE));
 
 		/**
 		 * Enable storing and fetching elevation data. Default is false
@@ -127,18 +143,20 @@ public class GraphhopperNoCrowding {
 		 * Enables or disables contraction hierarchies (CH). This speed-up mode is
 		 * enabled by default.
 		 */
-		hopper.setCHEnabled(false);
+		// hopper.setCHEnabled(false);
 
 		/**
 		 * Removes the on-disc routing files. Call only after calling close or before
 		 * importOrLoad or load
 		 */
-		// hopper.clean();
+		hopper.clean();
 
 		/**
 		 * Imports provided data from disc and creates graph. Depending on the settings
 		 * the resulting graph will be stored to disc so on a second call this method
 		 * will only load the graph from disc which is usually a lot faster.
+		 * The first call can take minutes if it imports or a few seconds for loading of
+		 *  course this is dependent on the area you import
 		 */
 		hopper.importOrLoad();
 
@@ -202,8 +220,8 @@ public class GraphhopperNoCrowding {
 		}
 		System.out.println("Selected POIs size is: " + selectedPOIs.size());
 
-		// NOTA!! SE O NUMERO DE POIS FOR IGUAL AO MAX_POIS_TO_VISIT ENTÃO NEM É PRECISO
-		// FAZER AS VERIFICAÇÕES ABAIXO, É SÓ RETORNAR A LISTA DE PONTOS DE INTERESSE
+		// NOTA!! SE O NUMERO DE POIS FOR IGUAL AO MAX_POIS_TO_VISIT ENTï¿½O NEM ï¿½ PRECISO
+		// FAZER AS VERIFICAï¿½ï¿½ES ABAIXO, ï¿½ Sï¿½ RETORNAR A LISTA DE PONTOS DE INTERESSE
 
 		if (selectedPOIs.size() < MAX_POIS_TO_VISIT) {
 
@@ -243,9 +261,9 @@ public class GraphhopperNoCrowding {
 					}
 				}
 
-				// NOTA!! SE AS CATEGORIAS VIEREM VAZIAS E NÃO TIVER CHOVIDO, NÃO VALE A PENA IR
-				// PARA A RECOMENDAÇÃO PORQUE SÓ
-				// DEVEM SER INCLUÍDOS OS POIS ESCOLHIDOS PELO USER
+				// NOTA!! SE AS CATEGORIAS VIEREM VAZIAS E Nï¿½O TIVER CHOVIDO, Nï¿½O VALE A PENA IR
+				// PARA A RECOMENDAï¿½ï¿½O PORQUE Sï¿½
+				// DEVEM SER INCLUï¿½DOS OS POIS ESCOLHIDOS PELO USER
 				if (selectedCategories.size() != 0 && request.getBudget() >= evaluateBudget(selectedPOIs)) {
 					int numberOfPointsToSuggest = MAX_POIS_TO_VISIT - selectedPOIs.size();
 					double remainingBudget = request.getBudget() - evaluateBudget(selectedPOIs);
@@ -278,7 +296,7 @@ public class GraphhopperNoCrowding {
 	 */
 	public LinkedList<LinkedList<PointOfInterest>> getAllScenarios(LinkedList<PointOfInterest> selectedPOIs) {
 		numberOfSuggestedPOIs = selectedPOIs.size();
-		LinkedList<LinkedList<PointOfInterest>> scenarios = poiCombination.choose(selectedPOIs, selectedPOIs.size());
+		LinkedList<LinkedList<PointOfInterest>> scenarios = PoiPermutations.choose(selectedPOIs, selectedPOIs.size());
 		return scenarios;
 	}
 
@@ -330,11 +348,16 @@ public class GraphhopperNoCrowding {
 			int count = 0;
 			int i = 0;
 			int j = i + 1;
+			
+// GHRequest no longer has methods setWeighting(...) and setVehicle(...)
+// See solution in: 
+// https://discuss.graphhopper.com/t/how-to-use-graphhopper-routing-requests-with-profile-in-gh-1-0/5565
+			
 			while (j < poiList.size()) {
 				System.out.println("J value is: " + j);
 				GHRequest req = new GHRequest(poiList.get(i).getGHPoint(), poiList.get(j).getGHPoint())
-						.setWeighting("short_fastest").setVehicle("foot").setLocale(Locale.ENGLISH)
-						.setAlgorithm("alternative_route");
+						.setLocale(Locale.ENGLISH)
+						.setAlgorithm(ALGORITHM);
 				GHResponse rsp = hopper.route(req);
 				if (rsp.hasErrors()) {
 					// handle them!
@@ -342,9 +365,9 @@ public class GraphhopperNoCrowding {
 						System.out.println(tw.toString());
 					return null;
 				}
-				System.out.println("A hora de abertura é " + tempOpenHours.get(i) + " e a hora de fecho é "
+				System.out.println("A hora de abertura Ã© " + tempOpenHours.get(i) + " e a hora de fecho Ã© "
 						+ tempCloseHours.get(i));
-				System.out.println("São " + calendar2.get(Calendar.HOUR_OF_DAY) + " horas");
+				System.out.println("SÃ£o " + calendar2.get(Calendar.HOUR_OF_DAY) + " horas");
 				if (calendar2.get(Calendar.HOUR_OF_DAY) >= tempOpenHours.get(i)
 						&& calendar2.get(Calendar.HOUR_OF_DAY) < tempCloseHours.get(i)) {
 					System.out.println("entrei!");
@@ -412,20 +435,20 @@ public class GraphhopperNoCrowding {
 	}
 
 	/**
-	 * This method returns a list of lists of PathWrappers, which is a class that
+	 * This method returns a list of lists of ResponsePaths, which is a class that
 	 * holds the data like points, distance, instructions, etc.. of a Path
 	 * 
 	 * @param listOfScenarios
 	 * @return
 	 */
-	public LinkedList<LinkedList<PathWrapper>> dividedRequest(LinkedList<LinkedList<GHPoint>> listOfScenarios) {
-		LinkedList<LinkedList<PathWrapper>> path = new LinkedList<LinkedList<PathWrapper>>();
+	public LinkedList<LinkedList<ResponsePath>> dividedRequest(LinkedList<LinkedList<GHPoint>> listOfScenarios) {
+		LinkedList<LinkedList<ResponsePath>> path = new LinkedList<LinkedList<ResponsePath>>();
 
 		for (LinkedList<GHPoint> ghPointList : listOfScenarios) {
 			int i = 0;
 			int j = i + 1;
 			while (j < ghPointList.size()) {
-				LinkedList<PathWrapper> temp = new LinkedList<PathWrapper>();
+				LinkedList<ResponsePath> temp = new LinkedList<ResponsePath>();
 				GHPoint begin = ghPointList.get(i);
 				GHPoint end = ghPointList.get(j);
 				// Set routing request from specified startPlace (fromLat, fromLon) to endPlace
@@ -433,17 +456,15 @@ public class GraphhopperNoCrowding {
 				// setWeighting: By default it supports fastest and shortest. Or specify empty
 				// to use default.
 				// setVehicle: Specifiy car, bike or foot. Or specify empty to use default.
-				GHRequest req = new GHRequest(begin, end).setWeighting("short_fastest").setVehicle("foot")
-						.setLocale(Locale.US);
+				GHRequest req = new GHRequest(begin, end).setLocale(Locale.US).setAlgorithm(ALGORITHM);
+
 				// the maximum number of returned path. Valid >= 2 because if just 1 the user
 				// should not use alternative route calculation due to the overhead
-				req.getHints().put("alternative_route.max_paths", "3");
-				// defines the minimum distance (again better: ‘weight’) that a branch from
+				req.getHints().putObject("alternative_route.max_paths", 3);
+				// defines the minimum distance (again better: ï¿½weightï¿½) that a branch from
 				// the source SPT must share with the destination Shortest Path Trees.
-				req.getHints().put("alternative_route.min_plateau_factor", "0.1");
-				req.getHints().put("elevation", true);
-				// set an algorithm to calculate the path
-				req.setAlgorithm("alternative_route");
+				req.getHints().putObject("alternative_route.min_plateau_factor", 0.1);
+				req.getHints().putObject("elevation", true);
 
 				// GHResponse is the wrapper containing path and error output of GraphHopper.
 				GHResponse rsp = hopper.route(req);
@@ -456,13 +477,13 @@ public class GraphhopperNoCrowding {
 				// use the best path, see the GHResponse class for more possibilities.
 				// add all the wrappers found between the two points to the temporary list
 				temp.addAll(rsp.getAll());
-				// add the temporary list to the final list of lists of pathwrappers
+				// add the temporary list to the final list of lists of ResponsePaths
 				path.add(temp);
 				i++;
 				j++;
 			}
 		}
-		System.out.println("Número de paths: " + path.size());
+		System.out.println("Nï¿½mero de paths: " + path.size());
 		return path;
 	}
 
@@ -475,11 +496,11 @@ public class GraphhopperNoCrowding {
 	 * @return
 	 */
 	
-	public List<PathWrapper> compareAlternativeRoutes(LinkedList<LinkedList<PathWrapper>> pathAlternatives) {
-		List<PathWrapper> sortedPaths = new LinkedList<PathWrapper>();
-		for (LinkedList<PathWrapper> diffPaths : pathAlternatives) {
+	public List<ResponsePath> compareAlternativeRoutes(LinkedList<LinkedList<ResponsePath>> pathAlternatives) {
+		List<ResponsePath> sortedPaths = new LinkedList<ResponsePath>();
+		for (LinkedList<ResponsePath> diffPaths : pathAlternatives) {
 			// sort the alternative routes regarding the distance covered
-			diffPaths.sort(Comparator.comparing(PathWrapper::getDistance));
+			diffPaths.sort(Comparator.comparing(ResponsePath::getDistance));
 
 			// get only the first path which corresponds to the shortest distance
 			sortedPaths.add(diffPaths.get(0));
@@ -496,12 +517,12 @@ public class GraphhopperNoCrowding {
 	 * @param sortedPaths
 	 * @return
 	 */
-	public List<PathWrapper> chooseBestDistance(List<PathWrapper> sortedPaths) {
+	public List<ResponsePath> chooseBestDistance(List<ResponsePath> sortedPaths) {
 		
 		MongoConnection mongo = new MongoConnection();
 
-		List<PathWrapper> temp = new LinkedList<PathWrapper>();
-		List<PathWrapper> best = new LinkedList<PathWrapper>();
+		List<ResponsePath> temp = new LinkedList<ResponsePath>();
+		List<ResponsePath> best = new LinkedList<ResponsePath>();
 		int from = 0;
 		int to = numberOfSuggestedPOIs + 1;
 
@@ -516,7 +537,7 @@ public class GraphhopperNoCrowding {
 
 			int effortLevel = analyzeEffort(temp);
 			
-			for (PathWrapper path : temp) {
+			for (ResponsePath path : temp) {
 				distance += path.getDistance();
 				crowding += mongo.getMaxCrowdingPath(path);
 			}
@@ -540,12 +561,12 @@ public class GraphhopperNoCrowding {
 				}
 		}
 
-		bestPathwrapper = best;
-		System.out.println("BEST PATHWRAPPER SIZE IS: " + bestPathwrapper.size());
+		bestResponsePath = best;
+		System.out.println("BEST ResponsePath SIZE IS: " + bestResponsePath.size());
 		return best;
 	}
 
-	private int calculateCalories(List<PathWrapper> temp) {
+	private int calculateCalories(List<ResponsePath> temp) {
 		double calories = 0;
 
 		for (int i = 0; i < temp.size(); i++) {
@@ -569,7 +590,7 @@ public class GraphhopperNoCrowding {
 		return (int) calories;
 	}
 
-	private int analyzeEffort(List<PathWrapper> temp) {
+	private int analyzeEffort(List<ResponsePath> temp) {
 
 		double effort = 0;
 		double maxEffort = 0;
@@ -623,7 +644,7 @@ public class GraphhopperNoCrowding {
 
 	private LinkedList<PointOfInterest> getOrderOfPOIs() {
 		ArrayList<GHPoint> temp = new ArrayList<>();
-		for (PathWrapper path : bestPathwrapper) {
+		for (ResponsePath path : bestResponsePath) {
 			PointList pointList = path.getPoints();
 			double lati = pointList.getLat(0);
 			double loni = pointList.getLon(0);
@@ -636,7 +657,7 @@ public class GraphhopperNoCrowding {
 			temp.add(origin);
 			// temp.add(destination);
 		}
-		System.out.println("O tamanho do TEMP é " + temp.size());
+		System.out.println("O tamanho do TEMP ï¿½ " + temp.size());
 
 		if (temp.size() > 0) {
 			temp.remove(0);
@@ -702,7 +723,7 @@ public class GraphhopperNoCrowding {
 	 * 
 	 * @param paths
 	 */
-	public void pathInfo(List<PathWrapper> paths) {
+	public void pathInfo(List<ResponsePath> paths) {
 		// create a calendar using the initial time asked by the user
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(request.getDepartureDate());
@@ -710,7 +731,7 @@ public class GraphhopperNoCrowding {
 		// this.routeOrderedPois = orderedPois;
 		int contadorPOIs = 0;
 		PointOfInterest poi = null;
-		for (PathWrapper path : paths) {
+		for (ResponsePath path : paths) {
 			if (contadorPOIs < orderedPois.size()) {
 				poi = orderedPois.get(contadorPOIs);
 			}
@@ -733,8 +754,8 @@ public class GraphhopperNoCrowding {
 
 			if (path != null) {
 				contadorPOIs++;
-				QueryResult start = hopper.getLocationIndex().findClosest(lati, loni, EdgeFilter.ALL_EDGES);
-				QueryResult end = hopper.getLocationIndex().findClosest(latf, lonf, EdgeFilter.ALL_EDGES);
+				Snap start = hopper.getLocationIndex().findClosest(lati, loni, EdgeFilter.ALL_EDGES);
+				Snap end = hopper.getLocationIndex().findClosest(latf, lonf, EdgeFilter.ALL_EDGES);
 
 				EdgeIteratorState startEdge = start.getClosestEdge();
 				EdgeIteratorState endEdge = end.getClosestEdge();
@@ -765,7 +786,7 @@ public class GraphhopperNoCrowding {
 	 * @param calendar
 	 * @param poi
 	 */
-	private void printPath(PathWrapper path, EdgeIteratorState startEdge, EdgeIteratorState endEdge, Calendar calendar,
+	private void printPath(ResponsePath path, EdgeIteratorState startEdge, EdgeIteratorState endEdge, Calendar calendar,
 			PointOfInterest poi) {
 
 		// ConvertSecondToHHMMSSString(instruction.getTime() / 1000);
@@ -809,7 +830,7 @@ public class GraphhopperNoCrowding {
 		System.out.println("POINTS:");
 		for (GHPoint3D p3d : path.getPoints()) {
 			System.out
-					.println("Lat: " + p3d.getLat() + "\tLon: " + p3d.getLon() + "\tElevation: " + p3d.getElevation());
+					.println("Lat: " + p3d.getLat() + "\tLon: " + p3d.getLon() + "\tElevation: " + p3d.getEle());
 			this.routeLine.add(p3d);
 			// addTimeToCalendar(calendar,p3d);
 		}
@@ -845,7 +866,7 @@ public class GraphhopperNoCrowding {
 				price += p.getPrice();
 			}
 			if (price >= request.getBudget()) {
-				System.out.println("Percurso impossível de ser efetuado");
+				System.out.println("Percurso impossï¿½vel de ser efetuado");
 			}
 		}
 		System.out.println("Total price: " + price);
@@ -962,15 +983,15 @@ public class GraphhopperNoCrowding {
 		// ids/indices of
 		// a memory efficient graph - often just implemented as an array.
 		LocationIndex li = hopper.getLocationIndex();
-		// This method returns the closest QueryResult for the specified location
+		// This method returns the closest Snap for the specified location
 		// (lat,lon) and only if
 		// the filter accepts the edge as valid candidate (e.g. filtering away car-only
 		// results for bike search)
 		// An object containing the closest node and edge for the specified location.The
 		// node id has at least one
 		// edge which is accepted from the specified edgeFilter.
-		// If nothing is found the method QueryResult.isValid will return false.
-		QueryResult ab = li.findClosest(latitude, longitude, EdgeFilter.ALL_EDGES);
+		// If nothing is found the method Snap.isValid will return false.
+		Snap ab = li.findClosest(latitude, longitude, EdgeFilter.ALL_EDGES);
 		// Returns the closest matching node. -1 if nothing found, this should be
 		// avoided via a call of 'isValid'
 		int n = ab.getClosestNode();
@@ -993,15 +1014,15 @@ public class GraphhopperNoCrowding {
 		// ids/indices of
 		// a memory efficient graph - often just implemented as an array.
 		LocationIndex li = hopper.getLocationIndex();
-		// This method returns the closest QueryResult for the specified location (lat,
+		// This method returns the closest Snap for the specified location (lat,
 		// lon) and only if
 		// the filter accepts the edge as valid candidate (e.g. filtering away car-only
 		// results for bike search)
 		// An object containing the closest node and edge for the specified location.
 		// The node id has at least one
 		// edge which is accepted from the specified edgeFilter.
-		// If nothing is found the method QueryResult.isValid will return false.
-		QueryResult qr = li.findClosest(latitude, longitude, EdgeFilter.ALL_EDGES);
+		// If nothing is found the method Snap.isValid will return false.
+		Snap qr = li.findClosest(latitude, longitude, EdgeFilter.ALL_EDGES);
 		// Returns the closest matching edge. Will be null if nothing found or call
 		// isValid before
 		EdgeIteratorState edge = qr.getClosestEdge();
@@ -1049,7 +1070,7 @@ public class GraphhopperNoCrowding {
 			timedPOIs.add(timepoi);
 		}
 
-		System.out.println("O tamanho de timedPOIs é: " + timedPOIs.size());
+		System.out.println("O tamanho de timedPOIs ï¿½: " + timedPOIs.size());
 
 		ArrayList<GHPoint3D> line = this.routeLine;
 		distances(line);
@@ -1079,7 +1100,7 @@ public class GraphhopperNoCrowding {
 		Timestamp startTime = request.getDepartureDate();
 		System.out.println("Start time is + " + startTime);
 
-		int calories = (int) calculateCalories(bestPathwrapper);
+		int calories = (int) calculateCalories(bestResponsePath);
 		System.out.println("Calories is + " + calories);
 
 		Timestamp endTime = routeEndTime;
