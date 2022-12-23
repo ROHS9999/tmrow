@@ -5,17 +5,19 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.mongodb.client.FindIterable;
 import org.bson.Document;
 
 import com.graphhopper.ResponsePath;
 import com.graphhopper.util.shapes.GHPoint3D;
-
+import java.util.Arrays;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.geojson.Point;
 import com.mongodb.client.model.geojson.Position;
+import org.bson.conversions.Bson;
 
 /**
  * MongoConnection is a class that allows to connect to MongoDB database and
@@ -38,9 +40,9 @@ public class MongoConnection {
 	 * 
 	 */
 	public MongoConnection() {
-		this.mongoClient = new MongoClient();
-		this.database = mongoClient.getDatabase("Crowding");
-		this.collection = database.getCollection("CrowdingLines");
+		this.mongoClient = new MongoClient("194.210.120.12", 27017);
+		this.database = mongoClient.getDatabase("crowding");
+		this.collection = database.getCollection("POIs");
 		java.util.logging.Logger.getLogger("org.mongodb.driver").setLevel(Level.OFF);
 	}
 
@@ -63,10 +65,9 @@ public class MongoConnection {
 		for (GHPoint3D ghPoint : path.getPoints()) {
 			Point refPoint = new Point(new Position(ghPoint.getLon(), ghPoint.getLat()));
 			Document closestCrowding = collection.find(Filters.near("geometry", refPoint, 3000.0, 0.0)).first();
-
 			Document properties = (Document) closestCrowding.get("properties");
 
-			int tempCrowding = Integer.valueOf(properties.getString("ele"));
+			int tempCrowding = Integer.valueOf(properties.getInteger("sustainability"));
 
 			System.out.println(tempCrowding);
 
@@ -109,9 +110,9 @@ public class MongoConnection {
 
 	public static void main(String[] args) {
 
-		MongoClient mongoClient = new MongoClient();
+		MongoClient mongoClient = new MongoClient("194.210.120.12", 27017);
 		MongoDatabase database = mongoClient.getDatabase("Crowding");
-		MongoCollection<Document> collection = database.getCollection("CrowdingLines");
+		MongoCollection<Document> collection = database.getCollection("POIs");
 
 		for (Document cur : collection.find()) {
 			Document geometry = (Document) cur.get("geometry");

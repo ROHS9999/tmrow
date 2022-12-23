@@ -137,11 +137,4 @@ public class Effort {
 
 	return EE;
     }
-
-    public static void main(String[] args) {
-	Effort e = new Effort(759, 547.096, 85, 59.9);
-	System.out.println(e.getMET());
-
-	System.out.println("Kilocalories " + e.calorieEstimation());
-    }
 }

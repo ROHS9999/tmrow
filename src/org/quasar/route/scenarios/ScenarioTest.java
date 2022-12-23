@@ -1,12 +1,9 @@
 package org.quasar.route.scenarios;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.quasar.route.basicParametrization.PointOfInterest;
-import org.quasar.route.basicParametrization.TimeInterval;
 import org.quasar.route.graphhopper.GraphhopperServer;
 import org.quasar.route.request.ConvertRouteRequest;
 import org.quasar.route.request.RouteRequest;

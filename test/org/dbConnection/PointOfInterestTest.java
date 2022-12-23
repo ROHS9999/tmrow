@@ -14,7 +14,7 @@ import com.graphhopper.util.shapes.GHPoint;
  */
 public class PointOfInterestTest {
 
-    PointOfInterest poi = new PointOfInterest(1, "Castelo de S�o Jorge", 38.7139092, -9.1334762, 45, 9, 18, 7, 10, 4,
+    PointOfInterest poi = new PointOfInterest(1, "Castelo de São Jorge", 38.7139092, -9.1334762, 45, 9, 18, 7, 10, 4,
 	    70);
 
     @Test
@@ -35,8 +35,8 @@ public class PointOfInterestTest {
 
     @Test
     public void changeName() {
-	poi.setName("Pra�a do Com�rcio");
-	assertEquals("Pra�a do Com�rcio", poi.getName());
+	poi.setName("Praça do Comércio");
+	assertEquals("Praça do Comércio", poi.getName());
     }
 
     @Test
@@ -53,7 +53,6 @@ public class PointOfInterestTest {
     @Test
     public void changeSustainability() {
 	poi.setSustainability(50);
-	;
 	assertEquals(50, poi.getSustainability());
     }
 

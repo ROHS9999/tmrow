@@ -16,7 +16,7 @@ public class PointOfInterest {
     private String name;
     private double latitude;
     private double longitude;
-    private int categoryID;
+    private String category;
     private int visitTime;
     private int crowding;
     private double price;
@@ -47,18 +47,18 @@ public class PointOfInterest {
      *                       interest in minutes
      */
     public PointOfInterest(int pointID, String name, double latitude, double longitude, int sustainability,
-	    int openHour, int closeHour, int category, double price, int crowding, int visit_time) {
-	this.pointID = pointID;
-	this.name = name;
-	this.latitude = latitude;
-	this.longitude = longitude;
-	this.sustainability = sustainability;
-	this.openHour = openHour;
-	this.closeHour = closeHour;
-	this.categoryID = category;
-	this.price = price;
-	this.crowding = crowding;
-	this.visitTime = visit_time;
+	    int openHour, int closeHour, String category, double price, int crowding, int visit_time) {
+        this.pointID = pointID;
+        this.name = name;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.sustainability = sustainability;
+        this.openHour = openHour;
+        this.closeHour = closeHour;
+        this.category = category;
+        this.price = price;
+        this.crowding = crowding;
+        this.visitTime = visit_time;
 
     }
 
@@ -118,18 +118,18 @@ public class PointOfInterest {
      * @return An int representing the category to which the point of interest is
      *         associated to
      */
-    public int getCategoryID() {
-	return categoryID;
+    public String getCategory() {
+	return category;
     }
 
     /**
      * Sets the category to which the point of interest is associated to
      * 
-     * @param categoryID An int representing the category to which the point of
+     * @param category An int representing the category to which the point of
      *                   interest is associated to
      */
-    public void setCategoryID(int categoryID) {
-	this.categoryID = categoryID;
+    public void setCategoryID(String category) {
+	this.category = category;
     }
 
 //	public LinkedList<Schedule> getSchedule() {
@@ -196,8 +196,8 @@ public class PointOfInterest {
      * @param category An int representing the category to which the point of
      *                 interest is associated to
      */
-    public void setCategory(int category) {
-	this.categoryID = category;
+    public void setCategory(String category) {
+	this.category = category;
     }
 
     /**

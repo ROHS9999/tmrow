@@ -116,34 +116,4 @@ public class TimeInterval {
     public void setEndTime(Timestamp endTime) {
 	this.endTime = endTime;
     }
-
-    public static void main(String[] args) {
-
-	Timestamp startTime = Timestamp.valueOf("2020-10-03 14:30:10.0");
-	Timestamp endTime = Timestamp.valueOf("2020-10-03 19:10:10.0");
-
-	System.out.println(Timestamp.valueOf("2020-10-03 14:30:10.0"));
-	System.out.println(Timestamp.valueOf("2020-10-03 19:10:10.0"));
-
-	Timestamp time = new Timestamp(1601924400);
-
-	System.out.println(time);
-
-	TimeInterval timeInterval = new TimeInterval(startTime, endTime);
-
-	System.out.println(timeInterval.compareTwoTimeStamps(endTime, startTime));
-
-	Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-
-	Calendar cal = Calendar.getInstance();
-	cal.setTime(timestamp);
-	System.out.println(cal.getTime());
-	// cal.clear(Calendar.YEAR);
-	// cal.clear(Calendar.DAY_OF_YEAR);
-
-	Date date = new Date();
-	date.toInstant();
-
-	System.out.println(timestamp.after(date));
-    }
 }

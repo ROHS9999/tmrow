@@ -1,12 +1,10 @@
 package org.request;
 
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import org.junit.Test;
 import org.quasar.route.basicParametrization.TimeInterval;
@@ -32,11 +30,11 @@ public class RouteRequestTest {
 	
 	int effortLevel = 1; // the maximum level of physical effort that the user is able to do
 	int budget = 100; // the budget that the user have to visit POIs
-	LinkedList<Integer> selectedPoints = new LinkedList<Integer>(); // user selected POIs to visit (the APP send just the IDs)
-	List<Integer> selectedCategories; // user preferred categories of POIs
+	LinkedList<Integer> selectedPoints = new LinkedList<Integer>(Arrays.asList(1,2)); // user selected POIs to visit (the APP send just the IDs)
+	List<Integer> selectedCategories = Arrays.asList(1,2); // user preferred categories of POIs
 	boolean checkWeather = false; // users states if they want suggestions or not
 	ArrayList<Double> usefulWeatherData; // the weather data (probability of precipitation) for the next 10 hours
-	Calendar calendar; // register the moment of the request
+	Calendar calendar = Calendar.getInstance(); // register the moment of the request
 
 //	public RouteRequest(GHPoint origin, GHPoint destination, Timestamp departureDate, int visitationTime, int effortLevel,
 //		int budget, LinkedList<Integer> selectedPoints, List<Integer> selectedCategories, boolean checkWeather) 	
@@ -121,48 +119,42 @@ public class RouteRequestTest {
 	
 	@Test
 	public void testGetSelectedPoints() {
-		fail("Not yet implemented");
+		assertEquals(selectedPoints, routeRequest.getSelectedPoints());
 	}
 
 	@Test
 	public void testSetSelectedPoints() {
-		fail("Not yet implemented");
+		LinkedList<Integer> selectedPOIs = new LinkedList<>();
+		selectedPOIs.add(1); // Castelo S. Jorge
+		selectedPOIs.add(30); // Museu Arqueol�gico do Carmo
+		routeRequest.setSelectedPoints(selectedPOIs);
+		assertEquals(selectedPOIs, routeRequest.getSelectedPoints());
 	}
 
 	@Test
 	public void testGetSelectedCategories() {
-		LinkedList<Integer> selectedPOIs = new LinkedList<>();
-		assertEquals(0, selectedPOIs.size());
-		selectedPOIs.add(1); // Castelo S. Jorge
-		selectedPOIs.add(30); // Museu Arqueol�gico do Carmo
-		assertEquals(2, selectedPOIs.size());
-		
-		assertEquals(selectedPOIs, selectedPoints);
+		assertEquals(selectedCategories, routeRequest.getSelectedCategories());
 	}
 
 	@Test
 	public void testGetCalendar() {
-		fail("Not yet implemented");
+		calendar.setTime(startTime);
+		assertEquals(calendar, routeRequest.getCalendar());
 	}
 
 	@Test
 	public void testIsCheckWeather() {
-		assertFalse(checkWeather);
+		assertFalse(routeRequest.isCheckWeather());
 	}
 
 	@Test
 	public void testSetCheckWeather() {
 		routeRequest.setCheckWeather(true);
-		assertTrue(checkWeather);
+		assertTrue(routeRequest.isCheckWeather());
 	}
 	
 	@Test
 	public void testGetUsefulWeatherData() {
-		fail("Not yet implemented");
-	}
-	
-	@Test
-	public void testRouteRequest() {
 		fail("Not yet implemented");
 	}
 

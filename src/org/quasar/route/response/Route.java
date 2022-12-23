@@ -119,9 +119,7 @@ public class Route {
      * 
      * @return A double representing the route total time
      */
-    public int getTime() {
-	return time;
-    }
+    public int getTime() { return time; }
 
     /**
      * Sets the route total time

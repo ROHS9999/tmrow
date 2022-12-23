@@ -56,7 +56,7 @@ public class OWMRequest {
 		result.append(line);
 	    }
 	    rd.close();
-	    System.out.println(result);
+	    //System.out.println(result);
 
 	    json = result.toString();
 	} catch (IOException e) {
@@ -80,7 +80,7 @@ public class OWMRequest {
     }
 
     private ArrayList<WeatherData> getWeatherData(String json) {
-	System.out.println("This is JSON" + json);
+	//System.out.println("This is JSON" + json);
 	JSONObject obj = new JSONObject(json);
 	JSONArray list = obj.getJSONArray("list");
 	Double temperature = null;
@@ -91,15 +91,15 @@ public class OWMRequest {
 	    for (int i = 0; i < list.length(); i++) {
 		JSONObject listObject = list.getJSONObject(i);
 		JSONObject main = listObject.getJSONObject("main");
-		System.out.println(main);
-		System.out.println(main.getDouble("temp"));
+		//System.out.println(main);
+		//System.out.println(main.getDouble("temp"));
 		temperature = main.getDouble("temp");
 
 		precipitation = listObject.getDouble("pop");
-		System.out.println(precipitation);
+		//System.out.println(precipitation);
 
 		date = list.getJSONObject(i).getString("dt_txt");
-		System.out.println(date);
+		//System.out.println(date);
 
 		weatherData.add(new WeatherData(temperature, precipitation, date));
 	    }
@@ -134,14 +134,14 @@ public class OWMRequest {
 	for (int i = 0; i < weatherData.size(); i++) {
 	    Calendar calendar = OWMRequest
 		    .dateToCalendar(weatherData.get(i).convertStringToDate(weatherData.get(i).getDate()));
-	    System.out.println("My calendar" + calendar.getTime());
+	    //System.out.println("My calendar" + calendar.getTime());
 
 	    int hours = (int) Duration.between(now.toInstant(), calendar.toInstant()).toHours();
 
 	    if (hours <= availableTime) {
 		// usefulWeather.put("Temperature", weatherData.get(i).getTemperature());
 		usefulWeather.add(weatherData.get(i).getPrecipitation());
-		System.out.println("I want this prevision: " + weatherData.get(i).toString());
+		//System.out.println("I want this prevision: " + weatherData.get(i).toString());
 
 	    }
 	}

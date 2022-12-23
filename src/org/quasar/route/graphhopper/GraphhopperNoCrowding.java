@@ -58,9 +58,9 @@ public class GraphhopperNoCrowding {
     private static final String VEHICLE = "foot";
     private static final String WEIGHTING = "short_fastest";
 
-	private static final String OSM_FILE = "../resources/CentralLisbon.osm.pbf";
-	private static final String GRAPHHOPPER_DIR = "../resources/graphhopperv2";
-	private static final String ELEVATION_PROVIDER = "C:/Users/Rúben Beirão/Desktop/RoutingTest/geo-graphs/target/classes";
+	private static final String OSM_FILE = "resources/CentralLisbon.osm.pbf";
+	private static final String GRAPHHOPPER_DIR = "resources/graphhopperv2";
+	private static final String ELEVATION_PROVIDER = "resources";
 	
 	private RouteRequest request;
 	private GraphHopper hopper;
@@ -226,7 +226,7 @@ public class GraphhopperNoCrowding {
 		if (selectedPOIs.size() < MAX_POIS_TO_VISIT) {
 
 			// copy the list of preferred categories chosen by the user
-			List<Integer> selectedCategories = request.getSelectedCategories();
+			List<String> selectedCategories = request.getSelectedCategories();
 
 			// Verify if the available time of the user is higher than the estimation of
 			// visit time for the POIs s/he chose

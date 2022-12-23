@@ -81,13 +81,14 @@ public class ConvertRouteRequest {
 	    }
 	}
 
-	LinkedList<Integer> selectedCategories = new LinkedList<Integer>();
+	LinkedList<String> selectedCategories = new LinkedList<String>();
 	JSONArray arrayOfCategories = obj.getJSONArray("selectedCategories");
 
 	if (arrayOfCategories != null) {
 	    for (int i = 0; i < arrayOfCategories.length(); i++) {
-		selectedCategories.add(arrayOfCategories.getInt(i));
-		System.out.println("The category " + arrayOfCategories.getInt(i) + " was added");
+			System.out.println(arrayOfCategories);
+			selectedCategories.add(arrayOfCategories.getString(i));
+			System.out.println("The category " + arrayOfCategories.getString(i) + " was added");
 
 	    }
 	}
@@ -108,9 +109,4 @@ public class ConvertRouteRequest {
 	return routeRequest;
     }
 
-    public static void main(String[] args) {
-	String jsonRouteRequest = "{origin: {latitude: 38.7144118, longitude: -9.1408772}, destination: {latitude: 38.7115605, longitude: -9.1367243}, departureDate: 1602772200000, visitationTime: 300, budget: 50, effortLevel: 2, selectedPoints: [], selectedCategories: [2, 7], checkWeather: false}";
-	ConvertRouteRequest receiveRouteRequest = new ConvertRouteRequest(jsonRouteRequest);
-
-    }
 }

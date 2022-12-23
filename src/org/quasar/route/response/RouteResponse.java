@@ -169,7 +169,7 @@ public class RouteResponse {
 		coordinates.put("longitude", routeResponse.getRoute().getPois().get(i).getPoi().getLongitude());
 		timepoi.put("coordinates", coordinates);
 
-		timepoi.put("categoryID", routeResponse.getRoute().getPois().get(i).getPoi().getCategoryID());
+		timepoi.put("categoryID", routeResponse.getRoute().getPois().get(i).getPoi().getCategory());
 		timepoi.put("visitTime", routeResponse.getRoute().getPois().get(i).getPoi().getVisitTime());
 		timepoi.put("price", routeResponse.getRoute().getPois().get(i).getPoi().getPrice());
 		timepoi.put("sustainability", routeResponse.getRoute().getPois().get(i).getPoi().getSustainability());
@@ -259,8 +259,8 @@ public class RouteResponse {
     }
 
     public static void main(String[] args) {
-	PointOfInterest poi = new PointOfInterest(1, "Castelo", 38.8736, -9.3463653, 50, 9, 18, 3, 5, 7, 70);
-	PointOfInterest poi2 = new PointOfInterest(1, "Pra�a", 38.3567, -9.456799, 80, 9, 18, 3, 5, 7, 70);
+	PointOfInterest poi = new PointOfInterest(1, "Castelo", 38.8736, -9.3463653, 50, 9, 18, "Viewpoint", 5, 7, 70);
+	PointOfInterest poi2 = new PointOfInterest(1, "Pra�a", 38.3567, -9.456799, 80, 9, 18, "Viewpoint", 5, 7, 70);
 
 	LinkedList<TimedPointOfInterest> timedPOIs = new LinkedList<>();
 	TimedPointOfInterest timedpoi1 = new TimedPointOfInterest(poi, Timestamp.valueOf("2020-10-03 14:50:10.0"));

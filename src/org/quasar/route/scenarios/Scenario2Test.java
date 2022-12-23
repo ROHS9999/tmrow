@@ -1,15 +1,10 @@
 package org.quasar.route.scenarios;
 
-import static org.junit.Assert.*;
-
-import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.junit.Test;
 import org.quasar.route.basicParametrization.PointOfInterest;
-import org.quasar.route.basicParametrization.TimeInterval;
 import org.quasar.route.graphhopper.GraphhopperServer;
 import org.quasar.route.request.ConvertRouteRequest;
 import org.quasar.route.request.RouteRequest;
@@ -36,7 +31,15 @@ public class Scenario2Test {
 
     @Test
     public void test() {
-	String scenarioRequest2 = "{origin: {latitude: 38.7087856, longitude: -9.1309565}, destination: {latitude: 38.7115605, longitude: -9.1367243}, departureDate: 1602763200000, visitationTime: 300, budget: 70, effortLevel: 2, selectedPoints: [22, 33, 34, 36, 38], selectedCategories: [], checkWeather: false}";
+	String scenarioRequest2 = "{origin: {latitude: 38.7087856, longitude: -9.1309565}," +
+								" destination: {latitude: 38.7115605, longitude: -9.1367243}," +
+								" departureDate: 1602763200000," +
+								" visitationTime: 300," +
+								" budget: 70," +
+								" effortLevel: 2," +
+								" selectedPoints: [22, 33, 34, 36, 38]," +
+								" selectedCategories: []," +
+								" checkWeather: false}";
 
 	ConvertRouteRequest scenario2Converter = new ConvertRouteRequest(scenarioRequest2);
 	RouteRequest routeRequest2 = scenario2Converter.getRouteRequest();

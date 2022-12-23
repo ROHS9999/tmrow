@@ -30,7 +30,7 @@ public class RouteRequest {
 	private int effortLevel; // the maximum level of physical effort that the user is able to do
 	private int budget; // the budget that the user have to visit POIs
 	private LinkedList<Integer> selectedPoints; // user selected POIs to visit (the APP send just the IDs)
-	private List<Integer> selectedCategories; // user preferred categories of POIs
+	private List<String> selectedCategories; // user preferred categories of POIs
 	private boolean checkWeather; // represents the user's will in which the weather conditions are checked or not
 	ArrayList<Double> usefulWeatherData; // the weather data (probability of precipitation) for the next 10 hours
 	private Calendar calendar; // register the moment of the request
@@ -52,7 +52,7 @@ public class RouteRequest {
 	 * @param checkWeather A boolean representing the user's will in which the weather conditions are checked or not
 	 */
 	public RouteRequest(GHPoint origin, GHPoint destination, Timestamp departureDate, int visitationTime, int effortLevel,
-			int budget, LinkedList<Integer> selectedPoints, List<Integer> selectedCategories, boolean checkWeather) {
+			int budget, LinkedList<Integer> selectedPoints, List<String> selectedCategories, boolean checkWeather) {
 
 		this.origin = origin;
 		this.destination = destination;
@@ -132,7 +132,7 @@ public class RouteRequest {
 	 * 
 	 * @return A List of integers representing the user preferred categories of POIs
 	 */
-	public List<Integer> getSelectedCategories() {
+	public List<String> getSelectedCategories() {
 		return selectedCategories;
 	}
 

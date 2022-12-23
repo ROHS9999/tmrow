@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.quasar.route.basicParametrization.PointOfInterest;
 import org.quasar.route.graphhopper.GraphhopperNoCrowding;
-import org.quasar.route.graphhopper.GraphhopperServer;
 import org.quasar.route.request.ConvertRouteRequest;
 import org.quasar.route.request.RouteRequest;
 import org.quasar.route.response.Route;

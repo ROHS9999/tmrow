@@ -1,44 +1,54 @@
-package org.request;
+package org.quasar.route.basicParametrization;
 
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
-import org.quasar.route.request.TimeInterval;
+import java.sql.Timestamp;
 
-public class TimeIntervalTest {
-	
-	TimeInterval timeInterval = new TimeInterval(14, 19);
+import static org.junit.jupiter.api.Assertions.*;
 
-	@Test
-	public void testTimeInterval() {
-	}
+class TimeIntervalTest {
 
-	@Test
-	public void testGetInterval() {
-		assertEquals(5, timeInterval.getInterval(), 0);
-	}
+    Timestamp startTime = Timestamp.valueOf("2022-05-09 17:00:00");
+    Timestamp endTime = Timestamp.valueOf("2022-05-09 18:00:00");
+    TimeInterval timeInterval = new TimeInterval(startTime,endTime);
 
-	@Test
-	public void testGetStartTime() {
-		assertEquals(14, timeInterval.getStartTime(), 0);
-	}
+    @Test
+    void timeDifferenceInHours() {
+        Assertions.assertEquals(1, timeInterval.timeDifferenceInHours());
+    }
 
-	@Test
-	public void testSetStartTime() {
-		timeInterval.setStartTime(15);
-		assertEquals(15, timeInterval.getStartTime(), 0);
-	}
+    @Test
+    void timeDifferenceInMinutes() {
+        Assertions.assertEquals(60, timeInterval.timeDifferenceInMinutes());
+    }
 
-	@Test
-	public void testGetEndTime() {
-		assertEquals(19, timeInterval.getEndTime(), 0);
+    @Test
+    void compareTwoTimeStamps() {
+        Assertions.assertEquals(-1, timeInterval.compareTwoTimeStamps(startTime, endTime));
+        Assertions.assertEquals(1, timeInterval.compareTwoTimeStamps(endTime, startTime));
+        Assertions.assertEquals(0, timeInterval.compareTwoTimeStamps(startTime, startTime));
+    }
 
-	}
+    @Test
+    void getStartTime() {
+        Assertions.assertEquals(startTime, timeInterval.getStartTime());
+    }
 
-	@Test
-	public void testSetEndTime() {
-		timeInterval.setEndTime(20);
-		assertEquals(20, timeInterval.getEndTime(), 0);
-	}
+    @Test
+    void setStartTime() {
+        timeInterval.setStartTime(Timestamp.valueOf("2022-05-09 17:30:00"));
+        Assertions.assertEquals(Timestamp.valueOf("2022-05-09 17:30:00"), timeInterval.getStartTime());
+    }
 
+    @Test
+    void getEndTime() {
+        Assertions.assertEquals(endTime, timeInterval.getEndTime());
+    }
+
+    @Test
+    void setEndTime() {
+        timeInterval.setEndTime(Timestamp.valueOf("2022-05-09 18:30:00"));
+        Assertions.assertEquals(Timestamp.valueOf("2022-05-09 18:30:00"), timeInterval.getEndTime());
+    }
 }

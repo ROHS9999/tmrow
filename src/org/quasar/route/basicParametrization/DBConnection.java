@@ -13,6 +13,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+import com.mongodb.MongoClient;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
+import org.bson.Document;
+import org.bson.conversions.Bson;
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * DBConnection is a class that allows to access the local database and extract
@@ -25,12 +37,12 @@ import java.util.Random;
 
 public class DBConnection {
 
-    final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
-    final String DB_URL = "jdbc:mysql://localhost:3306/crowding";
+    final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
+    final String DB_URL = "jdbc:mysql://127.0.0.1:3306/vodafone_lx_data?allowPublicKeyRetrieval=true&useSSL=false";
 
     // database credentials
     final String USER = "root";
-    final String PASS = "";
+    final String PASS = "root";
 
     private Connection conn = null;
     private Statement stmt = null;
@@ -53,7 +65,7 @@ public class DBConnection {
 	    /**
 	     * To connect to MySQL from Java, you have to use the JDBC driver from MySQL
 	     */
-	    Class.forName("com.mysql.jdbc.Driver");
+	    //Class.forName("com.mysql.jdbc.Driver");
 
 	    System.out.println("connecting to the database");
 	    /**
@@ -70,7 +82,7 @@ public class DBConnection {
 	     */
 	    stmt = conn.createStatement();
 
-	} catch (ClassNotFoundException | SQLException e) {
+	} catch ( SQLException e) {
 	    e.printStackTrace();
 	}
 
@@ -104,43 +116,47 @@ public class DBConnection {
      * @return A list containing the Points of Interest objects created with the
      *         data obtained from the database
      */
-    public LinkedList<PointOfInterest> getPOI() {
-	result = new LinkedList<PointOfInterest>();
+	public LinkedList<PointOfInterest> getPOI() {
+		// Connect to the MongoDB database
+		MongoClient mongoClient = new MongoClient("194.210.120.12", 27017);
+		MongoDatabase database = mongoClient.getDatabase("crowding");
+		MongoCollection<Document> collection = database.getCollection("POIs");
 
-	String sql = "SELECT point_id,point_name,longitude,latitude,sustainability,opens_hours,closes_hours,category_id,price,crowding,visit_time"
-		+ " from point_of_interest;";
-	try {
+		System.out.println(collection.countDocuments());
 
-	    ResultSet rs = stmt.executeQuery(sql);
-	    while (rs.next()) {
-		int id = rs.getInt("point_id");
-		String name = rs.getString("point_name");
-		double latitude = rs.getDouble("latitude");
-		double longitude = rs.getDouble("longitude");
-		int sustainability = rs.getInt("sustainability");
-		int openHour = rs.getInt("opens_hours");
-		int closeHour = rs.getInt("closes_hours");
-		int category = rs.getInt("category_id");
-		double price = rs.getDouble("price");
-		int crowding = rs.getInt("crowding");
-		int visit_time = rs.getInt("visit_time");
+		// Find all documents in the collection
+		FindIterable<Document> documents = collection.find();
+		MongoCursor<Document> cursor = documents.iterator();
 
-		// displaying values:
-		// System.out.println("id " + id);
+		while (cursor.hasNext()) {
+			Document doc = cursor.next();
+			Document geometry = doc.get("geometry", Document.class);
+			Document properties = doc.get("properties", Document.class);
 
-		PointOfInterest poi = new PointOfInterest(id, name, latitude, longitude, sustainability, openHour,
-			closeHour, category, price, crowding, visit_time);
+			List<Double> coordinates = geometry.get("coordinates", List.class);
+			double longitude = coordinates.get(0);
+			double latitude = coordinates.get(1 );
 
-		result.add(poi);
-	    }
-	} catch (SQLException e) {
-	    e.printStackTrace();
+			int id = properties.getInteger("point_id");
+			String name = properties.getString("point_name");
+			int sustainability = properties.getInteger("sustainability");
+			int openHour = properties.getInteger("opens_hours");
+			int closeHour = properties.getInteger("closes_hours");
+			String category = properties.getString("category");
+			double price = properties.getDouble("price");
+			int crowding = 40;
+			int visit_time = properties.getInteger("visit_time");
+
+			PointOfInterest poi = new PointOfInterest(id, name, latitude, longitude, sustainability, openHour,
+					closeHour, category, price, crowding, visit_time);
+
+			result.add(poi);
+		}
+
+		return result;
 	}
 
-	return result;
-    }
-
-    /**
+	/**
      * This method returns the list of Points of Interest corresponding to the IDs
      * that are in the selectePoints list
      * 
@@ -182,14 +198,14 @@ public class DBConnection {
 	// visit during rain
 	LinkedList<PointOfInterest> filteredSelectedPOIs = new LinkedList<PointOfInterest>();
 	// Iterate the array that contains the categories adequated for rain
-	for (Iterator<Integer> it = getRainyCategories().iterator(); it.hasNext();) {
-	    Integer inte = it.next();
+	for (Iterator<String> it = getRainyCategories().iterator(); it.hasNext();) {
+		String inte = it.next();
 	    // iterate the list of POIs given as parameter
 	    for (Iterator<PointOfInterest> i = selectedPOIs.iterator(); i.hasNext();) {
 		PointOfInterest poi2 = i.next();
 		// if the poi has a category that belongs to the list of categories adequated
 		// for rain it is added to the output list
-		if (poi2.getCategoryID() == inte) {
+		if (poi2.getCategory() == inte) {
 		    // i.remove();
 		    filteredSelectedPOIs.add(poi2);
 		}
@@ -209,54 +225,54 @@ public class DBConnection {
      * @return a list of integer representing the list of category ids suitable with
      *         rain conditions
      */
-    public List<Integer> analyzeCategories(List<Integer> selectedCategories) {
-	// first compare the selected categories to the suitable rainy categories,
-	// so that we eliminate the categories that cannot be suggested
-	List<Integer> filteredCategories = selectedCategories;
-	// removes from the first list all of its elements that are not contained in the
-	// specified collection.
-	filteredCategories.retainAll(getRainyCategories());
+    public List<String> analyzeCategories(List<String> selectedCategories) {
+		// first compare the selected categories to the suitable rainy categories,
+		// so that we eliminate the categories that cannot be suggested
+		List<String> filteredCategories = selectedCategories;
+		// removes from the first list all of its elements that are not contained in the
+		// specified collection.
+		filteredCategories.retainAll(getRainyCategories());
 
-	// if it does not result in an empty array, than it should be verified if there
-	// is at least 5 POIs
-	// in those categories to suggest to the user
-	int numOfPOIs = 0; // a counter for the number of POIs
-	if (filteredCategories.size() > 0) {
-	    for (Iterator<Integer> it = filteredCategories.iterator(); it.hasNext();) {
-		Integer inte = it.next();
-		for (Iterator<PointOfInterest> i = getResult().iterator(); i.hasNext();) {
-		    PointOfInterest poi = i.next();
-		    if (poi.getCategoryID() == inte) {
-			numOfPOIs++;
-			System.out.println("num is " + numOfPOIs);
-		    }
+		// if it does not result in an empty array, than it should be verified if there
+		// is at least 5 POIs
+		// in those categories to suggest to the user
+		int numOfPOIs = 0; // a counter for the number of POIs
+		if (filteredCategories.size() > 0) {
+			for (Iterator<String> it = filteredCategories.iterator(); it.hasNext();) {
+				String inte = it.next();
+			for (Iterator<PointOfInterest> i = getResult().iterator(); i.hasNext();) {
+				PointOfInterest poi = i.next();
+				if (poi.getCategory() == inte) {
+				numOfPOIs++;
+				System.out.println("num is " + numOfPOIs);
+				}
+			}
+			}
+			// if the number of POIs remaining to suggest in the filtered categories is less
+			// than 5 then
+			// we should add a category that is not the same that is there and that is
+			// suitable for rain
+			if (numOfPOIs < 5) {
+			List<String> notRepeatedCategories = getRainyCategories();
+			// Removes from the first list all of its elements that are contained in the
+			// specified collection
+			notRepeatedCategories.removeAll(filteredCategories);
+			// generate a stream of pseudorandom numbers
+			Random rand = new Random();
+			String randomElement = notRepeatedCategories.get(rand.nextInt(notRepeatedCategories.size()));
+			filteredCategories.add(randomElement);
+			System.out.println("The random category number " + randomElement + "was added and the now there are "
+				+ filteredCategories.size() + " categories");
+			}
 		}
-	    }
-	    // if the number of POIs remaining to suggest in the filtered categories is less
-	    // than 5 then
-	    // we should add a category that is not the same that is there and that is
-	    // suitable for rain
-	    if (numOfPOIs < 5) {
-		List<Integer> notRepeatedCategories = getRainyCategories();
-		// Removes from the first list all of its elements that are contained in the
-		// specified collection
-		notRepeatedCategories.removeAll(filteredCategories);
-		// generate a stream of pseudorandom numbers
-		Random rand = new Random();
-		int randomElement = notRepeatedCategories.get(rand.nextInt(notRepeatedCategories.size()));
-		filteredCategories.add(randomElement);
-		System.out.println("The random category number " + randomElement + "was added and the now there are "
-			+ filteredCategories.size() + " categories");
-	    }
-	}
 
-	// if it gets out of categories then all the rain categories are selected
-	if (filteredCategories.size() == 0) {
-	    filteredCategories = getRainyCategories();
-	}
+		// if it gets out of categories then all the rain categories are selected
+		if (filteredCategories.size() == 0) {
+			filteredCategories = getRainyCategories();
+		}
 
-	System.out.println("Filtered categories size is: " + filteredCategories.size());
-	return filteredCategories;
+		System.out.println("Filtered categories size is: " + filteredCategories.size());
+		return filteredCategories;
     }
 
     /**
@@ -265,11 +281,11 @@ public class DBConnection {
      * @return a list of integer containing the category ids of the categories
      *         suitable with raining conditions
      */
-    private ArrayList<Integer> getRainyCategories() {
-	ArrayList<Integer> rainyCategories = new ArrayList<>(); // create a new array to store the rain categories
-	rainyCategories.addAll(Arrays.asList(1, 2, 4, 5, 6)); // store the predefined rain categories
+    private ArrayList<String> getRainyCategories() {
+		ArrayList<String> rainyCategories = new ArrayList<>(); // create a new array to store the rain categories
+		rainyCategories.addAll(Arrays.asList("Local Store", "Religious Spot", "Restaurant", "Tasquinha", "Museum")); // store the predefined rain categories
 
-	return rainyCategories; // return the rain categories
+		return rainyCategories; // return the rain categories
     }
 
     /**
@@ -291,66 +307,66 @@ public class DBConnection {
      *         be suggested to the user
      */
     public LinkedList<PointOfInterest> suggestPointOfInterest(LinkedList<PointOfInterest> selectedPOIs,
-	    List<Integer> selectedCategories, int numberOfPointsToSuggest, double remainingBudget,
+	    List<String> selectedCategories, int numberOfPointsToSuggest, double remainingBudget,
 	    int timeLeftForVisit) {
-	start();
-	// get all the POIs stored in the database
-	LinkedList<PointOfInterest> allPOIs = getPOI();
-	// new list to store only the POIs that are able to be suggested
-	LinkedList<PointOfInterest> filteredPOIs = new LinkedList<PointOfInterest>();
-	// first compare the selectedPOIs to all the POIs that we get from the database,
-	// so that we eliminate
-	// the ones that were already chosen and ensure that we dont suggest repeated
-	// POIs
-	System.out.println("The selected POIs size is: " + selectedPOIs.size());
+		start();
+		// get all the POIs stored in the database
+		LinkedList<PointOfInterest> allPOIs = getPOI();
+		// new list to store only the POIs that are able to be suggested
+		LinkedList<PointOfInterest> filteredPOIs = new LinkedList<PointOfInterest>();
+		// first compare the selectedPOIs to all the POIs that we get from the database,
+		// so that we eliminate
+		// the ones that were already chosen and ensure that we dont suggest repeated
+		// POIs
+		System.out.println("The selected POIs size is: " + selectedPOIs.size());
 
-	for (Iterator<PointOfInterest> it = allPOIs.iterator(); it.hasNext();) {
-	    PointOfInterest poi = it.next();
-	    for (Iterator<PointOfInterest> i = selectedPOIs.iterator(); i.hasNext();) {
-		PointOfInterest poi2 = i.next();
-		if (poi2.getPointID() == poi.getPointID()) {
-		    it.remove();
+		for (Iterator<PointOfInterest> it = allPOIs.iterator(); it.hasNext();) {
+			PointOfInterest poi = it.next();
+			for (Iterator<PointOfInterest> i = selectedPOIs.iterator(); i.hasNext();) {
+			PointOfInterest poi2 = i.next();
+			if (poi2.getPointID() == poi.getPointID()) {
+				it.remove();
+			}
+			}
 		}
-	    }
-	}
 
-	// allPOIs.removeAll(selectedPOIs);
-	System.out.println("After removing the selectedPOIs my size is: " + allPOIs.size());
+		// allPOIs.removeAll(selectedPOIs);
+		System.out.println("After removing the selectedPOIs my size is: " + allPOIs.size());
 
-	// second, for each remaining POI in the list choose only the ones that are in
-	// the the same category as the
-	// selected categories by the user
-	for (PointOfInterest poi : allPOIs) {
-	    for (int i = 0; i < selectedCategories.size(); i++) {
-		if (poi.getCategoryID() == selectedCategories.get(i)) {
-		    filteredPOIs.add(poi);
-		    System.out.println(poi.getPointID() + " was added to filtered POIs");
+		// second, for each remaining POI in the list choose only the ones that are in
+		// the the same category as the
+		// selected categories by the user
+		for (PointOfInterest poi : allPOIs) {
+			for (int i = 0; i < selectedCategories.size(); i++) {
+				if (poi.getCategory().equals(selectedCategories.get(i))) {
+					filteredPOIs.add(poi);
+					System.out.println(poi.getPointID() + " was added to filtered POIs");
+				}
+			}
 		}
-	    }
-	}
-	// order the filtered list by the greatest values of sustainability
-	filteredPOIs.sort(Comparator.comparing(PointOfInterest::getSustainability));
-	LinkedList<PointOfInterest> finalSuggestion = new LinkedList<PointOfInterest>();
-	// suggest only the POIs remaining to complete the list that was already chosen
-	// by the user
-	for (int p = filteredPOIs.size() - 1; p > filteredPOIs.size() - 1 - numberOfPointsToSuggest; p--) {
-	    if (remainingBudget - filteredPOIs.get(p).getPrice() >= 0
-		    && timeLeftForVisit - filteredPOIs.get(p).getVisitTime() >= 0) {
-		finalSuggestion.add(filteredPOIs.get(p));
-		System.out.println("The poi " + filteredPOIs.get(p).getPointID() + "was added to the final suggestion");
-		remainingBudget -= filteredPOIs.get(p).getPrice();
-		timeLeftForVisit -= filteredPOIs.get(p).getVisitTime();
-	    }
+		// order the filtered list by the greatest values of sustainability
+		filteredPOIs.sort(Comparator.comparing(PointOfInterest::getSustainability));
+		LinkedList<PointOfInterest> finalSuggestion = new LinkedList<PointOfInterest>();
+		// suggest only the POIs remaining to complete the list that was already chosen
+		// by the user
+		for (int p = filteredPOIs.size() - 1; p > filteredPOIs.size() - 1 - numberOfPointsToSuggest; p--) {
+			if (remainingBudget - filteredPOIs.get(p).getPrice() >= 0
+				&& timeLeftForVisit - filteredPOIs.get(p).getVisitTime() >= 0) {
+			finalSuggestion.add(filteredPOIs.get(p));
+			System.out.println("The poi " + filteredPOIs.get(p).getPointID() + "was added to the final suggestion");
+			remainingBudget -= filteredPOIs.get(p).getPrice();
+			timeLeftForVisit -= filteredPOIs.get(p).getVisitTime();
+			}
 
-	}
+		}
 
-	for (PointOfInterest poi : selectedPOIs) {
-	    finalSuggestion.add(poi);
-	}
+		for (PointOfInterest poi : selectedPOIs) {
+			finalSuggestion.add(poi);
+		}
 
-	close();
+		close();
 
-	return finalSuggestion;
+		return finalSuggestion;
     }
 
     /**
@@ -360,24 +376,24 @@ public class DBConnection {
      * @return a list of PointOfInterest cointaining all the POIs in the database
      */
     public LinkedList<PointOfInterest> getResult() {
-	return result;
+		return result;
     }
 
     public static void main(String[] args) {
-	DBConnection db = new DBConnection();
-	List<Integer> selectedCategories = new ArrayList<>();
-	selectedCategories.add(5);
-	db.start();
-	db.getPOI();
-	db.analyzeCategories(selectedCategories);
-	db.close();
+		DBConnection db = new DBConnection();
+		List<String> selectedCategories = new ArrayList<>();
+		selectedCategories.add("Tasquinha");
+		db.start();
+		db.getPOI();
+		db.analyzeCategories(selectedCategories);
+		db.close();
 
-	int from = 0;
-	int to = 6;
-	List<PointOfInterest> best = new LinkedList<PointOfInterest>();
-	List<PointOfInterest> temp = db.getResult();
-	best = temp.subList(from, to);
+		int from = 0;
+		int to = 6;
+		List<PointOfInterest> best = new LinkedList<PointOfInterest>();
+		List<PointOfInterest> temp = db.getResult();
+		best = temp.subList(from, to);
 
-	System.out.println("BEST SIZE IS: " + best.size());
+		System.out.println("BEST SIZE IS: " + best.size());
     }
 }
