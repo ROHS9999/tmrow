@@ -597,7 +597,7 @@ public class GraphhopperServer {
             List<Double> ratioValues = new ArrayList<>(diffPaths.size());
 
             for (ResponsePath path : diffPaths) {
-                pathCrowding = mongo.getMaxCrowdingPath(path);
+                pathCrowding = mongo.getMaxCrowdingPath(path, request.getDepartureDate());
                 distance = path.getDistance();
 
                 ratio = 1 / (pathCrowding * distance);
@@ -661,7 +661,7 @@ public class GraphhopperServer {
 
             for (ResponsePath path : temp) {
                 distance += path.getDistance();
-                crowding += mongo.getMaxCrowdingPath(path);
+                crowding += mongo.getMaxCrowdingPath(path, request.getDepartureDate());
             }
 
             ratio = 1 / (distance * crowding);

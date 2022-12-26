@@ -30,7 +30,7 @@ public class Scenario1Test {
 
 //	@Test
     public static void main(String[] args) {
-	String scenarioRequest1 = "{origin: {latitude: 38.7144118, longitude: -9.1408772}, destination: {latitude: 38.7115605, longitude: -9.1367243}, departureDate: 1602772200000, visitationTime: 300, budget: 50, effortLevel: 3, selectedPoints: [], selectedCategories: ['Religious Spot', 'Monument'], checkWeather: false}";
+	String scenarioRequest1 = "{origin: {latitude: 38.7144118, longitude: -9.1408772}, destination: {latitude: 38.7115605, longitude: -9.1367243}, departureDate: 1652967000000, visitationTime: 300, budget: 50, effortLevel: 3, selectedPoints: [], selectedCategories: ['Religious Spot', 'Monument'], checkWeather: false}";
 
 	ConvertRouteRequest scenario1Converter = new ConvertRouteRequest(scenarioRequest1);
 	RouteRequest routeRequest1 = scenario1Converter.getRouteRequest();

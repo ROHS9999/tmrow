@@ -1,23 +1,22 @@
 package org.quasar.route.graphhopper;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
+import com.influxdb.query.FluxTable;
 import com.mongodb.client.FindIterable;
 import org.bson.Document;
 
 import com.graphhopper.ResponsePath;
 import com.graphhopper.util.shapes.GHPoint3D;
-import java.util.Arrays;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.geojson.Point;
 import com.mongodb.client.model.geojson.Position;
-import org.bson.conversions.Bson;
 
 /**
  * MongoConnection is a class that allows to connect to MongoDB database and
@@ -31,7 +30,9 @@ import org.bson.conversions.Bson;
 public class MongoConnection {
 	private MongoClient mongoClient;
 	private MongoDatabase database;
-	private MongoCollection<Document> collection;
+	private MongoCollection<Document> pois;
+	private MongoCollection<Document> grid_segments;
+	private MongoCollection<Document> segments;
 
 	/**
 	 * Creates an instance based on a (single) mongodb node (localhost, default
@@ -42,7 +43,9 @@ public class MongoConnection {
 	public MongoConnection() {
 		this.mongoClient = new MongoClient("194.210.120.12", 27017);
 		this.database = mongoClient.getDatabase("crowding");
-		this.collection = database.getCollection("POIs");
+		this.pois = database.getCollection("POIs");
+		this.grid_segments = database.getCollection("grid_segments");
+		this.segments = database.getCollection("segments");
 		java.util.logging.Logger.getLogger("org.mongodb.driver").setLevel(Level.OFF);
 	}
 
@@ -55,24 +58,34 @@ public class MongoConnection {
 	 * @param path Represents a ResponsePath which holds the data of a Path
 	 * @return An int representing the maximum value of crowding in a path
 	 */
-	public int getMaxCrowdingPath(ResponsePath path) {
+	public int getMaxCrowdingPath(ResponsePath path, Timestamp time) {
 		int maxCrowding = 0;
 
 		int pathSize = path.getPoints().size();
 
-		System.out.println("PATHSIZE" + pathSize);
+		System.out.println(time.getTime()/1000);
+		System.out.println("PATHSIZE" + path);
 
 		for (GHPoint3D ghPoint : path.getPoints()) {
 			Point refPoint = new Point(new Position(ghPoint.getLon(), ghPoint.getLat()));
-			Document closestCrowding = collection.find(Filters.near("geometry", refPoint, 3000.0, 0.0)).first();
+			Document closestCrowding = pois.find(Filters.near("geometry", refPoint, 3000.0, 0.0)).first();
 			Document properties = (Document) closestCrowding.get("properties");
 
-			int tempCrowding = Integer.valueOf(properties.getInteger("sustainability"));
 
-			System.out.println(tempCrowding);
+			Document gridWithin = grid_segments.find(Filters.geoIntersects("geometry", refPoint)).first();
+			//for (Document doc : segmentsWithin) {
+			//	Document prop = (Document) doc.get("properties");
+			//	int gridId = prop.getInteger("id");
+			//	System.out.println(gridId);
+			//}
+			Document prop = (Document) gridWithin.get("properties");
+			int grid = Integer.valueOf(prop.getInteger("id"));
 
-			if (tempCrowding > maxCrowding)
-				maxCrowding = tempCrowding;
+			InfluxConnection influx = new InfluxConnection();
+			int crowding = influx.queryCrowdingFromGrid(time.getTime()/1000, grid);
+
+			if (crowding > maxCrowding)
+				maxCrowding = crowding;
 		}
 
 		System.out.println("MAXCROWDING " + maxCrowding);
@@ -104,8 +117,12 @@ public class MongoConnection {
 	 * @return a MongoCollection document representing the collection in the
 	 *         database in MongoDB
 	 */
-	public MongoCollection<Document> getCollection() {
-		return collection;
+	public MongoCollection<Document> getPois() {
+		return pois;
+	}
+
+	public MongoCollection<Document> getSegments() {
+		return segments;
 	}
 
 	public static void main(String[] args) {

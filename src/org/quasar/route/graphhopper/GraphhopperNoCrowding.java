@@ -539,7 +539,7 @@ public class GraphhopperNoCrowding {
 			
 			for (ResponsePath path : temp) {
 				distance += path.getDistance();
-				crowding += mongo.getMaxCrowdingPath(path);
+				crowding += mongo.getMaxCrowdingPath(path, request.getDepartureDate());
 			}
 			
 				if (best.size() == 0 && effortLevel <= request.getEffortLevel()) {
